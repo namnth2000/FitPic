@@ -1,0 +1,19 @@
+{
+  "name": "FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop",
+  "short_name": "FitPic",
+  "description": "Đưa ảnh về đúng tỉ lệ cho mạng xã hội mà không crop hay làm mất nội dung.",
+  "lang": "vi",
+  "id": "https://fitpic.namnth.com/",
+  "start_url": "https://fitpic.namnth.com/",
+  "display": "standalone",
+  "background_color": "#fbfcfb",
+  "theme_color": "#047857",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -33,6 +33,7 @@ FitPic là web tool giúp đưa ảnh về đúng định dạng social media m�
 - Large source images may have memory/performance implications in the browser; verify this during implementation before adding complexity.
 - Preview canvas dùng cạnh dài 960px; download render lại composition ở 2160px để tránh dùng preview-resolution làm output.
 - Theme mặc định dùng `prefers-color-scheme`; lựa chọn sáng/tối rõ ràng của người dùng được lưu cục bộ dưới khóa `fitpic-theme`.
+- Production URL chính thức là `https://fitpic.namnth.com/`. Dùng URL này cho canonical, Open Graph URL và sitemap absolute URL.
 
 # Before completing a task
 - Run the relevant checks.
