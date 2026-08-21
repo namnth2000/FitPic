@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="FitPic chuẩn bị ảnh đúng định dạng social mà không crop, ngay trên thiết bị của bạn." />
+  <title>FitPic - Đúng khung, đủ ảnh</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="fitpic-core.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="/" aria-label="FitPic trang chủ">Fit<span>Pic</span></a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Chuyển sang giao diện tối"
+        aria-pressed="false">
+        <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20.2 14.3A8.4 8.4 0 0 1 9.7 3.8 8.4 8.4 0 1 0 20.2 14.3Z" />
+        </svg>
+        <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.5" />
+          <path
+            d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+        </svg>
+      </button>
+      <a class="privacy-link" href="privacy.html">Quyền riêng tư</a>
+    </div>
+  </header>
+  <main>
+    <section class="product-description" aria-label="Giới thiệu FitPic">
+      <p>Chọn nơi bạn muốn đăng, FitPic sẽ đặt ảnh vào đúng tỉ lệ mà không cắt mất nội dung nào.</p>
+    </section>
+
+    <section class="workspace" aria-label="Tạo ảnh social media">
+      <div class="control-column">
+        <section class="panel upload-panel" aria-label="Chọn ảnh">
+          <label id="upload-label" class="upload-dropzone" for="image-upload">
+            <span class="upload-icon" aria-hidden="true">↑</span>
+            <span class="upload-title">Tải ảnh từ thiết bị</span>
+            <span class="upload-copy">JPG, PNG, WebP hoặc GIF</span>
+            <span class="upload-action">Chọn ảnh</span>
+          </label>
+          <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+          <p id="file-name" class="file-name">Ảnh của bạn chỉ được xử lý trong trình duyệt.</p>
+          <p id="error-message" class="message error" role="alert" hidden></p>
+        </section>
+
+        <div id="editor" hidden>
+          <section class="panel" aria-label="Chọn nơi đăng">
+            <div class="panel-heading">
+              <span id="selected-ratio" class="ratio-badge">4:5</span>
+            </div>
+            </br>
+            <div id="platform-options" class="choice-grid" aria-label="Nơi đăng ảnh"></div>
+          </section>
+          <section class="panel" aria-label="Chọn nền">
+            <div id="background-options" class="background-options" aria-label="Kiểu nền"></div>
+          </section>
+        </div>
+      </div>
+
+      <section class="preview-column" aria-label="Ảnh xem trước">
+        <div class="preview-heading">
+          <span class="device-note">Không crop</span>
+        </div>
+        <div class="preview-stage">
+          <div class="preview-frame">
+            <div class="empty-preview" id="empty-preview" aria-hidden="true"><span>Ảnh xem trước sẽ hiện tại đây</span>
+            </div>
+            <canvas id="preview-canvas" aria-label="Bản xem trước ảnh đã định dạng"></canvas>
+          </div>
+        </div>
+        <button id="download-button" class="download-button" type="button" disabled>Download JPG</button>
+        <p id="status-message" class="message status" aria-live="polite"></p>
+      </section>
+    </section>
+  </main>
+  <footer>FitPic xử lý ảnh ngay trên thiết bị của bạn. <a href="privacy.html">Tìm hiểu thêm</a></footer>
+</body>
+
+</html>

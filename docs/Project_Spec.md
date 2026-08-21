@@ -103,7 +103,7 @@
 # 3. UI/UX
 
 - **Nền tảng và thiết bị:** Web, sử dụng được trên desktop và mobile.
-- **Màn hình hoặc khu vực chính:** Header với wordmark FitPic; khu vực upload; khu vực chọn platform / placement; khu vực chọn background; preview; nút download.
+- **Màn hình hoặc khu vực chính:** Header với wordmark FitPic và nút đổi chủ đề; một mô tả ngắn; khu vực upload; khu vực chọn platform / placement; khu vực chọn background; preview; nút download. Giao diện không dùng các tiêu đề lớn hoặc tiêu đề khu vực hiển thị.
 - **Bố cục và thao tác chính:** Tập trung vào một luồng ngắn trên cùng một trang hoặc một giao diện liên tục. Người dùng không phải chuyển qua editor phức tạp hoặc cấu hình kỹ thuật trước khi tải ảnh xuống.
 - **Trạng thái cần hiển thị:**
   - Chưa có ảnh: hiển thị khu vực upload rõ ràng.
@@ -114,7 +114,8 @@
 - **Brand và tài nguyên:**
   - Logo: wordmark chữ **FitPic**.
   - Brand color: `#047857`, chỉ dùng làm màu nhấn, không phủ quá nhiều giao diện.
-  - Hướng thiết kế: đơn giản, nhanh, sạch và tập trung vào ảnh.
+  - Hướng thiết kế: đơn giản, nhanh, sạch và tập trung vào ảnh; dùng sans-serif dễ đọc.
+  - Hỗ trợ giao diện sáng và tối. Lần đầu mở trang theo preference của thiết bị hoặc trình duyệt; người dùng có thể chuyển theme bằng nút icon nội bộ.
 - **Sản phẩm tham khảo:** Không có yêu cầu sao chép giao diện cụ thể. FitPic ưu tiên flow đơn giản hơn một image editor đầy đủ.
 
 # 4. Dữ liệu và quyền riêng tư
@@ -142,3 +143,4 @@
 - [ ] Không yêu cầu tài khoản, đăng nhập hoặc backend.
 - [ ] Giao diện sử dụng được trên desktop và mobile.
 - [ ] V1 không chứa custom background, reposition, crop, padding control, batch export hoặc các công cụ image editor ngoài phạm vi.
+- [ ] Tạo một trang html riêng để thông báo về chính sách bảo mật và quyền riêng tư của FitPic

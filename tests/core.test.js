@@ -1,0 +1,43 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { getCanvasSize, getContainRect, getCoverRect, getPlatform } = require('../fitpic-core.js');
+
+function assertRectClose(actual, expected) {
+  for (const [key, value] of Object.entries(expected)) {
+    assert.ok(Math.abs(actual[key] - value) < 0.000001, `${key}: expected ${value}, received ${actual[key]}`);
+  }
+}
+
+test('maps every supported placement to its specified aspect ratio', () => {
+  assert.deepEqual(getPlatform('instagram-feed').ratio, [4, 5]);
+  assert.deepEqual(getPlatform('instagram-story-reels').ratio, [9, 16]);
+  assert.deepEqual(getPlatform('tiktok').ratio, [9, 16]);
+  assert.deepEqual(getPlatform('facebook-feed').ratio, [4, 5]);
+  assert.deepEqual(getPlatform('youtube-thumbnail').ratio, [16, 9]);
+  assert.deepEqual(getPlatform('youtube-shorts').ratio, [9, 16]);
+});
+
+test('uses an exact output ratio with the requested long edge', () => {
+  assert.deepEqual(getCanvasSize('instagram-feed', 2160), { width: 1728, height: 2160 });
+  assert.deepEqual(getCanvasSize('tiktok', 2160), { width: 1215, height: 2160 });
+  assert.deepEqual(getCanvasSize('youtube-thumbnail', 2160), { width: 2160, height: 1215 });
+});
+
+test('contain rectangle centers image at its largest uncropped size', () => {
+  assertRectClose(getContainRect(1600, 900, 1728, 2160), { x: 0, y: 594, width: 1728, height: 972 });
+  assertRectClose(getContainRect(900, 1600, 2160, 1215), { x: 738.28125, y: 0, width: 683.4375, height: 1215 });
+});
+
+test('centers a landscape foreground vertically inside a 9:16 canvas without cropping', () => {
+  const { width, height } = getCanvasSize('instagram-story-reels', 2160);
+  assertRectClose(getContainRect(1600, 900, width, height), {
+    x: 0,
+    y: 738.28125,
+    width: 1215,
+    height: 683.4375,
+  });
+});
+
+test('cover rectangle fills the blur background canvas', () => {
+  assert.deepEqual(getCoverRect(1600, 900, 1728, 2160), { x: -1056, y: 0, width: 3840, height: 2160 });
+});
