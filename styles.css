@@ -1,8 +1,10 @@
+/* Hallmark · macrostructure: preserved FitPic workbench · genre: modern-minimal · tone: calm-functional · anchor: emerald · pre-emit critique: P5 H4 E5 S5 R5 V5 */
 :root {
   color-scheme: light dark;
   --ink: #17212b;
   --muted: #536474;
   --line: #d9e0e4;
+  --line-strong: #a9bbb6;
   --surface: #ffffff;
   --page: #fbfcfb;
   --canvas: #f3f6f5;
@@ -18,13 +20,16 @@
   --shadow: rgba(21, 38, 46, .055);
   --accent: #047857;
   --accent-dark: #065f46;
-  --focus: #f59e0b;
+  --accent-ink: #ffffff;
+  --error: #b42318;
+  --focus: #b45309;
 }
 
 :root[data-theme="dark"] {
   --ink: #edf5f1;
   --muted: #b4c5bd;
   --line: #34433e;
+  --line-strong: #6f837c;
   --surface: #16211e;
   --page: #0d1513;
   --canvas: #101916;
@@ -40,6 +45,8 @@
   --shadow: rgba(0, 0, 0, .24);
   --accent: #34d399;
   --accent-dark: #6ee7b7;
+  --accent-ink: #0d1513;
+  --error: #fda29b;
   --focus: #fbbf24;
 }
 
@@ -48,6 +55,7 @@
     --ink: #edf5f1;
     --muted: #b4c5bd;
     --line: #34433e;
+    --line-strong: #6f837c;
     --surface: #16211e;
     --page: #0d1513;
     --canvas: #101916;
@@ -63,6 +71,8 @@
     --shadow: rgba(0, 0, 0, .24);
     --accent: #34d399;
     --accent-dark: #6ee7b7;
+    --accent-ink: #0d1513;
+    --error: #fda29b;
     --focus: #fbbf24;
   }
 }
@@ -73,10 +83,9 @@
 
 body {
   margin: 0;
-  min-width: 320px;
   color: var(--ink);
   background: var(--page);
-  font-family: Montserrat, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 a {
@@ -128,6 +137,14 @@ footer a {
   color: var(--ink);
   background: var(--surface);
   cursor: pointer;
+  position: relative;
+  transition: background-color .15s, border-color .15s, color .15s, transform .1s;
+}
+
+.theme-toggle::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
 }
 
 .theme-icon {
@@ -216,6 +233,10 @@ main {
   min-height: 4px;
 }
 
+.panel-heading {
+  margin-bottom: 18px;
+}
+
 .ratio-badge,
 .device-note {
   display: inline-flex;
@@ -226,14 +247,14 @@ main {
   background: var(--choice-selected);
   color: var(--accent-dark);
   font-size: .75rem;
-  font-weight: 750;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .upload-dropzone {
   min-height: 205px;
   padding: 24px;
-  border: 1.5px dashed #a9bbb6;
+  border: 1.5px dashed var(--line-strong);
   border-radius: 13px;
   display: grid;
   place-content: center;
@@ -271,7 +292,7 @@ main {
 .upload-title {
   color: var(--ink);
   font-size: .95rem;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .upload-copy {
@@ -283,7 +304,7 @@ main {
   margin-top: 14px;
   color: var(--accent);
   font-size: .85rem;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 #image-upload {
@@ -316,14 +337,10 @@ main {
   background: var(--control);
   font: inherit;
   font-size: .82rem;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
   text-align: left;
-  transition: border-color .15s, color .15s, background .15s;
-}
-
-.choice-button:hover {
-  border-color: #7aa998;
+  transition: border-color .15s, color .15s, background-color .15s, transform .1s;
 }
 
 .choice-button[aria-pressed="true"] {
@@ -404,24 +421,32 @@ body:has(#editor:not([hidden])) .empty-preview {
   min-height: 50px;
   border: 0;
   border-radius: 10px;
-  color: #fff;
+  color: var(--accent-ink);
   background: var(--accent);
   font: inherit;
   font-size: .93rem;
   font-weight: 800;
   cursor: pointer;
-  transition: transform .15s, background .15s;
+  transition: transform .15s, background-color .15s;
 }
 
-.download-button:hover:not(:disabled) {
-  background: var(--accent-dark);
-  transform: translateY(-1px);
+.theme-toggle:active:not(:disabled),
+.choice-button:active:not(:disabled),
+.download-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.theme-toggle:disabled,
+.choice-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
 }
 
 .download-button:disabled {
   color: var(--disabled-text);
   background: var(--disabled);
   cursor: not-allowed;
+  opacity: .72;
 }
 
 .message {
@@ -431,7 +456,7 @@ body:has(#editor:not([hidden])) .empty-preview {
 }
 
 .error {
-  color: #b42318;
+  color: var(--error);
 }
 
 .status {
@@ -453,6 +478,16 @@ footer {
   color: var(--muted);
   font-size: .8rem;
   text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+footer a {
+  white-space: nowrap;
 }
 
 .policy-page {
@@ -492,7 +527,7 @@ footer {
   display: inline-block;
   margin-top: 40px;
   color: var(--accent-dark);
-  font-weight: 750;
+  font-weight: 700;
   text-underline-offset: 4px;
 }
 
@@ -536,20 +571,73 @@ footer {
     border-radius: 14px;
   }
 
+  .panel-heading {
+    margin-bottom: 14px;
+  }
+
   .preview-stage {
     min-height: 330px;
     padding: 16px;
   }
 
   .choice-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .choice-grid .choice-button {
+    min-height: 52px;
+    padding: 8px;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .background-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .background-options .choice-button {
-    flex-basis: 90px;
+    min-height: 52px;
+    padding-inline: 6px;
+    line-height: 1.2;
   }
 
   .policy-page {
     padding: 40px 0;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover:not(:disabled) {
+    border-color: var(--line-strong);
+    background: var(--upload-hover);
+  }
+
+  .choice-button:hover:not(:disabled) {
+    border-color: var(--line-strong);
+  }
+
+  .download-button:hover:not(:disabled) {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+  }
+
+  .download-button:hover:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .upload-dropzone,
+  .choice-button,
+  .download-button {
+    transition-duration: .01ms;
+  }
+
+  .download-button:hover:not(:disabled) {
+    transform: none;
   }
 }
