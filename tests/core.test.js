@@ -10,17 +10,23 @@ function assertRectClose(actual, expected) {
 
 test('maps every supported placement to its specified aspect ratio', () => {
   assert.deepEqual(getPlatform('instagram-feed').ratio, [4, 5]);
+  assert.deepEqual(getPlatform('instagram-square').ratio, [1, 1]);
   assert.deepEqual(getPlatform('instagram-story-reels').ratio, [9, 16]);
   assert.deepEqual(getPlatform('tiktok').ratio, [9, 16]);
   assert.deepEqual(getPlatform('facebook-feed').ratio, [4, 5]);
   assert.deepEqual(getPlatform('youtube-thumbnail').ratio, [16, 9]);
+  assert.deepEqual(getPlatform('youtube-4-3').ratio, [4, 3]);
+  assert.deepEqual(getPlatform('youtube-3-4').ratio, [3, 4]);
   assert.deepEqual(getPlatform('youtube-shorts').ratio, [9, 16]);
 });
 
 test('uses an exact output ratio with the requested long edge', () => {
   assert.deepEqual(getCanvasSize('instagram-feed', 2160), { width: 1728, height: 2160 });
+  assert.deepEqual(getCanvasSize('instagram-square', 2160), { width: 2160, height: 2160 });
   assert.deepEqual(getCanvasSize('tiktok', 2160), { width: 1215, height: 2160 });
   assert.deepEqual(getCanvasSize('youtube-thumbnail', 2160), { width: 2160, height: 1215 });
+  assert.deepEqual(getCanvasSize('youtube-4-3', 2160), { width: 2160, height: 1620 });
+  assert.deepEqual(getCanvasSize('youtube-3-4', 2160), { width: 1620, height: 2160 });
 });
 
 test('contain rectangle centers image at its largest uncropped size', () => {
