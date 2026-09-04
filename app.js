@@ -1,5 +1,14 @@
 (function () {
-  const { platforms, backgrounds, getPlatform, getCanvasSize, getContainRect, getCoverRect } = window.FitPicCore;
+  const {
+    platforms,
+    backgrounds,
+    getPlatform,
+    getCanvasSize,
+    getContainRect,
+    getCoverRect,
+    getCropRect,
+  } = window.FitPicCore;
+
   const previewCanvas = document.querySelector('#preview-canvas');
   const uploadInput = document.querySelector('#image-upload');
   const uploadLabel = document.querySelector('#upload-label');
@@ -14,8 +23,14 @@
   const customColorPalette = document.querySelector('#custom-color-palette');
   const customColorInput = document.querySelector('#custom-color-input');
   const customColorHex = document.querySelector('#custom-color-hex');
+  const cropControls = document.querySelector('#crop-controls');
+  const resetCropButton = document.querySelector('#reset-crop');
   const previewFrame = document.querySelector('.preview-frame');
   const previewNote = document.querySelector('#preview-note');
+  const previewNavigation = document.querySelector('#preview-navigation');
+  const previousPreviewButton = document.querySelector('#preview-previous');
+  const nextPreviewButton = document.querySelector('#preview-next');
+  const previewCounter = document.querySelector('#preview-counter');
   const themeToggle = document.querySelector('#theme-toggle');
 
   const defaultCustomColor = '#7C3AED';
@@ -48,15 +63,21 @@
 
   const state = {
     images: [],
+    previewIndex: 0,
     platformId: 'instagram-feed',
     backgroundId: 'blur',
     customColor: defaultCustomColor,
     pendingShareFiles: null,
+    cropDrag: null,
   };
 
   const previewLongEdge = 960;
   const exportLongEdge = 2160;
   const supportedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+  function clampUnit(value) {
+    return Math.min(1, Math.max(0, value));
+  }
 
   function prefersDarkTheme() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -118,7 +139,7 @@
   }
 
   function activeImageEntry() {
-    return state.images[0] || null;
+    return state.images[state.previewIndex] || null;
   }
 
   function ratioLabel(platformId = state.platformId) {
@@ -173,7 +194,7 @@
     backgroundButtons.innerHTML = backgroundMarkup();
     renderCustomPalette();
     updateChoiceButtons();
-    syncCustomColorControls();
+    syncEditorControls();
   }
 
   function updateChoiceButtons() {
@@ -191,11 +212,21 @@
     });
   }
 
-  function syncCustomColorControls() {
+  function syncEditorControls() {
     customColorControls.hidden = state.backgroundId !== 'custom';
     customColorInput.value = state.customColor;
     customColorHex.value = state.customColor;
     customColorHex.classList.remove('is-invalid');
+
+    const isCrop = state.backgroundId === 'crop' && Boolean(activeImageEntry());
+    cropControls.hidden = !isCrop;
+    previewFrame.classList.toggle('is-crop-mode', isCrop);
+    previewCanvas.setAttribute('aria-label', isCrop
+      ? 'Bản xem trước ảnh crop. Kéo ảnh để thay đổi vùng giữ lại.'
+      : 'Bản xem trước ảnh đã định dạng');
+
+    const entry = activeImageEntry();
+    resetCropButton.disabled = !entry || (entry.cropX === 0.5 && entry.cropY === 0.5);
   }
 
   function updateDownloadUi() {
@@ -206,11 +237,22 @@
     } else {
       downloadButton.textContent = count > 1 ? `Tải ${count} ảnh JPG` : 'Tải ảnh JPG';
     }
-    previewNote.textContent = count > 1 ? `${count} ảnh · Không crop` : 'Không crop';
   }
 
-  function drawComposition(canvas, longEdge, image) {
-    if (!image) return;
+  function updatePreviewUi() {
+    const count = state.images.length;
+    const hasBatch = count > 1;
+    previewNavigation.hidden = !hasBatch;
+    previewCounter.textContent = count ? `${state.previewIndex + 1} / ${count}` : '0 / 0';
+    previousPreviewButton.disabled = state.previewIndex <= 0;
+    nextPreviewButton.disabled = state.previewIndex >= count - 1;
+    previewNote.textContent = state.backgroundId === 'crop' ? 'Crop' : 'Không crop';
+    syncEditorControls();
+  }
+
+  function drawComposition(canvas, longEdge, entry) {
+    if (!entry?.image) return;
+    const image = entry.image;
     const { width, height } = getCanvasSize(state.platformId, longEdge);
     canvas.width = width;
     canvas.height = height;
@@ -218,9 +260,25 @@
     if (canvas === previewCanvas) {
       previewFrame.style.aspectRatio = `${width} / ${height}`;
     }
+
     const context = canvas.getContext('2d', { alpha: false });
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
+
+    if (state.backgroundId === 'crop') {
+      context.fillStyle = '#000000';
+      context.fillRect(0, 0, width, height);
+      const crop = getCropRect(
+        image.naturalWidth,
+        image.naturalHeight,
+        width,
+        height,
+        entry.cropX,
+        entry.cropY,
+      );
+      context.drawImage(image, crop.x, crop.y, crop.width, crop.height);
+      return;
+    }
 
     if (state.backgroundId === 'white') {
       context.fillStyle = '#ffffff';
@@ -250,7 +308,8 @@
   function renderPreview() {
     const entry = activeImageEntry();
     if (!entry) return;
-    drawComposition(previewCanvas, previewLongEdge, entry.image);
+    drawComposition(previewCanvas, previewLongEdge, entry);
+    updatePreviewUi();
   }
 
   async function decodeImage(file) {
@@ -263,7 +322,13 @@
         image.onerror = reject;
         image.src = url;
       });
-      return { file, image, objectUrl: url };
+      return {
+        file,
+        image,
+        objectUrl: url,
+        cropX: 0.5,
+        cropY: 0.5,
+      };
     } catch (error) {
       URL.revokeObjectURL(url);
       throw error;
@@ -313,10 +378,11 @@
       releaseImages();
       invalidatePendingShare();
       state.images = decoded;
+      state.previewIndex = 0;
       const first = decoded[0];
       fileName.textContent = decoded.length === 1
         ? `${first.file.name} - ${first.image.naturalWidth} × ${first.image.naturalHeight}px`
-        : `${decoded.length} ảnh đã chọn. Preview dùng ${first.file.name}; cùng tỉ lệ và nền sẽ áp dụng cho tất cả.`;
+        : `${decoded.length} ảnh đã chọn. Dùng mũi tên ở preview để xem từng ảnh; tỉ lệ và chế độ nền áp dụng cho cả batch.`;
       editor.hidden = false;
       downloadButton.disabled = false;
       updateDownloadUi();
@@ -326,7 +392,7 @@
         setError(`${failedCount} file không hợp lệ hoặc không đọc được đã được bỏ qua.`);
       }
       setStatus(decoded.length > 1
-        ? `${decoded.length} ảnh đã sẵn sàng. Chọn tỉ lệ và nền rồi lưu tất cả ảnh.`
+        ? `${decoded.length} ảnh đã sẵn sàng. Bạn có thể xem từng ảnh trước khi lưu.`
         : 'Ảnh đã sẵn sàng. Chọn tỉ lệ và nền để xem kết quả.');
     } finally {
       uploadLabel.classList.remove('is-loading');
@@ -349,9 +415,15 @@
     state.backgroundId = button.dataset.background;
     invalidatePendingShare();
     updateChoiceButtons();
-    syncCustomColorControls();
     renderPreview();
-    setStatus(state.backgroundId === 'custom' ? `Đang dùng nền ${state.customColor}.` : `Đã đổi nền thành ${button.textContent.trim()}.`);
+
+    if (state.backgroundId === 'crop') {
+      setStatus('Crop phủ kín khung. Kéo ảnh trong preview để chọn vùng giữ lại.');
+    } else if (state.backgroundId === 'custom') {
+      setStatus(`Đang dùng nền ${state.customColor}.`);
+    } else {
+      setStatus(`Đã đổi nền thành ${button.textContent.trim()}.`);
+    }
   }
 
   function setCustomColor(value) {
@@ -361,7 +433,6 @@
     state.backgroundId = 'custom';
     invalidatePendingShare();
     updateChoiceButtons();
-    syncCustomColorControls();
     renderPreview();
     setStatus(`Đang dùng nền ${normalized}.`);
     return true;
@@ -383,6 +454,101 @@
     if (!valid) customColorHex.value = state.customColor;
   }
 
+  function goToPreview(index) {
+    if (!state.images.length) return;
+    const nextIndex = Math.min(state.images.length - 1, Math.max(0, index));
+    if (nextIndex === state.previewIndex) return;
+    endCropDrag();
+    state.previewIndex = nextIndex;
+    renderPreview();
+  }
+
+  function previousPreview() {
+    goToPreview(state.previewIndex - 1);
+  }
+
+  function nextPreview() {
+    goToPreview(state.previewIndex + 1);
+  }
+
+  function resetCrop() {
+    const entry = activeImageEntry();
+    if (!entry) return;
+    entry.cropX = 0.5;
+    entry.cropY = 0.5;
+    invalidatePendingShare();
+    renderPreview();
+    setStatus(`Đã đặt lại crop cho ảnh ${state.previewIndex + 1}.`);
+  }
+
+  function cropOverflow(entry) {
+    const centered = getCropRect(
+      entry.image.naturalWidth,
+      entry.image.naturalHeight,
+      previewCanvas.width,
+      previewCanvas.height,
+      0.5,
+      0.5,
+    );
+    return {
+      x: Math.max(0, centered.width - previewCanvas.width),
+      y: Math.max(0, centered.height - previewCanvas.height),
+    };
+  }
+
+  function beginCropDrag(event) {
+    if (state.backgroundId !== 'crop' || !activeImageEntry()) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    const entry = activeImageEntry();
+    state.cropDrag = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startCropX: entry.cropX,
+      startCropY: entry.cropY,
+    };
+    previewCanvas.setPointerCapture?.(event.pointerId);
+    previewFrame.classList.add('is-dragging');
+    event.preventDefault();
+  }
+
+  function moveCropDrag(event) {
+    const drag = state.cropDrag;
+    const entry = activeImageEntry();
+    if (!drag || !entry || drag.pointerId !== event.pointerId || state.backgroundId !== 'crop') return;
+
+    const bounds = previewCanvas.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const overflow = cropOverflow(entry);
+    const deltaCanvasX = (event.clientX - drag.startClientX) * (previewCanvas.width / bounds.width);
+    const deltaCanvasY = (event.clientY - drag.startClientY) * (previewCanvas.height / bounds.height);
+
+    entry.cropX = overflow.x > 0
+      ? clampUnit(drag.startCropX - (deltaCanvasX / overflow.x))
+      : 0.5;
+    entry.cropY = overflow.y > 0
+      ? clampUnit(drag.startCropY - (deltaCanvasY / overflow.y))
+      : 0.5;
+
+    invalidatePendingShare();
+    drawComposition(previewCanvas, previewLongEdge, entry);
+    syncEditorControls();
+    event.preventDefault();
+  }
+
+  function endCropDrag(event) {
+    if (!state.cropDrag) return;
+    if (event && state.cropDrag.pointerId !== event.pointerId) return;
+    try {
+      if (event) previewCanvas.releasePointerCapture?.(event.pointerId);
+    } catch (error) {
+      // Pointer capture may already have been released by the browser.
+    }
+    state.cropDrag = null;
+    previewFrame.classList.remove('is-dragging');
+  }
+
   function canvasToBlob(canvas) {
     return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.94));
   }
@@ -400,7 +566,7 @@
 
   async function buildExportFile(entry, index) {
     const exportCanvas = document.createElement('canvas');
-    drawComposition(exportCanvas, exportLongEdge, entry.image);
+    drawComposition(exportCanvas, exportLongEdge, entry);
     const blob = await canvasToBlob(exportCanvas);
     if (!blob) throw new Error('Blob creation failed');
     return new File([blob], exportFileName(entry, index), {
@@ -455,8 +621,6 @@
   async function downloadImages() {
     if (!state.images.length) return;
 
-    // If Safari dropped the original user activation while the JPEGs were being
-    // prepared, the second tap can call navigator.share immediately with cached files.
     if (state.pendingShareFiles && canShareFiles(state.pendingShareFiles)) {
       const cachedFiles = state.pendingShareFiles;
       state.pendingShareFiles = null;
@@ -526,6 +690,16 @@
     setTheme(isDark ? 'light' : 'dark');
   }
 
+  function handleKeyboardNavigation(event) {
+    if (state.images.length <= 1) return;
+    if (event.target.closest('input, textarea, select, button, a, [contenteditable="true"]')) return;
+    if (event.key === 'ArrowLeft') {
+      previousPreview();
+    } else if (event.key === 'ArrowRight') {
+      nextPreview();
+    }
+  }
+
   uploadInput.addEventListener('change', onUpload);
   platformButtons.addEventListener('click', changePlatform);
   backgroundButtons.addEventListener('click', changeBackground);
@@ -538,8 +712,17 @@
       changeHexColor();
     }
   });
+  previousPreviewButton.addEventListener('click', previousPreview);
+  nextPreviewButton.addEventListener('click', nextPreview);
+  resetCropButton.addEventListener('click', resetCrop);
+  previewCanvas.addEventListener('pointerdown', beginCropDrag);
+  previewCanvas.addEventListener('pointermove', moveCropDrag);
+  previewCanvas.addEventListener('pointerup', endCropDrag);
+  previewCanvas.addEventListener('pointercancel', endCropDrag);
+  previewCanvas.addEventListener('lostpointercapture', endCropDrag);
   downloadButton.addEventListener('click', downloadImages);
   themeToggle.addEventListener('click', toggleTheme);
+  document.addEventListener('keydown', handleKeyboardNavigation);
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     if (!document.documentElement.dataset.theme) updateThemeToggle();
   });
@@ -551,4 +734,5 @@
   initializeTheme();
   renderChoices();
   updateDownloadUi();
+  updatePreviewUi();
 })();
