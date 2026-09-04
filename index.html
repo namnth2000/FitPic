@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube mà không crop hay làm mất nội dung." />
+    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung hoặc crop đúng vùng bạn muốn." />
   <meta name="application-name" content="FitPic" />
   <meta name="apple-mobile-web-app-title" content="FitPic" />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
@@ -14,17 +14,20 @@
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="vi_VN" />
   <meta property="og:site_name" content="FitPic" />
-  <meta property="og:title" content="FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop" />
-  <meta property="og:description" content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội mà vẫn giữ trọn nội dung." />
+  <meta property="og:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
+  <meta property="og:description"
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, giữ trọn nội dung hoặc crop đúng vùng bạn muốn." />
   <meta property="og:url" content="https://fitpic.namnth.com/" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop" />
-  <meta name="twitter:description" content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội mà vẫn giữ trọn nội dung." />
-  <title>FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop</title>
+  <meta name="twitter:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
+  <meta name="twitter:description"
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, giữ trọn nội dung hoặc crop đúng vùng bạn muốn." />
+  <title>FitPic - Chỉnh kích thước ảnh mạng xã hội</title>
   <link rel="canonical" href="https://fitpic.namnth.com/" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="site.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="crop.css" />
   <script src="fitpic-core.js" defer></script>
   <script src="app.js" defer></script>
   <script type="application/ld+json">
@@ -34,16 +37,17 @@
       "@id": "https://fitpic.namnth.com/#webapp",
       "name": "FitPic",
       "url": "https://fitpic.namnth.com/",
-      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội mà không crop hoặc làm mất nội dung.",
+      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội, hỗ trợ giữ trọn nội dung hoặc crop theo vị trí người dùng chọn.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
       "inLanguage": "vi",
       "isAccessibleForFree": true,
       "featureList": [
         "Định dạng ảnh cho Instagram, TikTok, Facebook và YouTube",
-        "Giữ nguyên toàn bộ nội dung ảnh, không crop",
+        "Giữ nguyên toàn bộ nội dung ảnh với nền blur hoặc màu",
+        "Crop phủ kín khung và kéo để chọn vùng giữ lại",
         "Resize nhiều ảnh cùng lúc với cùng thiết lập",
-        "Nền blur, trắng, đen hoặc màu tùy chỉnh",
+        "Xem trước từng ảnh trong batch bằng previous / next",
         "Xử lý ảnh trực tiếp trong trình duyệt"
       ]
     }
@@ -70,7 +74,7 @@
   </header>
   <main>
     <section class="product-description" aria-label="Giới thiệu FitPic">
-      <p>Chọn một hoặc nhiều ảnh, tỉ lệ muốn đăng và nền. FitPic giữ trọn nội dung rồi xuất tất cả ảnh ngay trên thiết bị.</p>
+      <p>Chọn một hoặc nhiều ảnh, tỉ lệ muốn đăng và cách lấp khung. Giữ trọn ảnh với nền hoặc crop đúng vùng bạn muốn rồi xuất ngay trên thiết bị.</p>
     </section>
 
     <section class="workspace" aria-label="Tạo ảnh social media">
@@ -91,8 +95,8 @@
           <section class="panel" aria-label="Chọn tỉ lệ và nền tảng">
             <div id="platform-options" class="platform-choice-grid" aria-label="Tỉ lệ ảnh"></div>
           </section>
-          <section class="panel" aria-label="Chọn nền">
-            <div id="background-options" class="background-options" aria-label="Kiểu nền"></div>
+          <section class="panel" aria-label="Chọn nền hoặc crop">
+            <div id="background-options" class="background-options" aria-label="Cách lấp khung"></div>
             <div id="custom-color-controls" class="custom-color-controls" hidden>
               <div id="custom-color-palette" class="custom-color-palette" aria-label="Bảng màu tùy chỉnh"></div>
               <div class="custom-color-row">
@@ -113,14 +117,29 @@
 
       <section class="preview-column" aria-label="Ảnh xem trước">
         <div class="preview-heading">
+          <div id="preview-navigation" class="preview-navigation" aria-label="Điều hướng ảnh xem trước" hidden>
+            <button id="preview-previous" class="preview-nav-button" type="button" aria-label="Xem ảnh trước">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6" /></svg>
+            </button>
+            <span id="preview-counter" class="preview-counter" aria-live="polite">0 / 0</span>
+            <button id="preview-next" class="preview-nav-button" type="button" aria-label="Xem ảnh tiếp theo">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
+            </button>
+          </div>
           <span id="preview-note" class="device-note">Không crop</span>
         </div>
         <div class="preview-stage">
           <div class="preview-frame">
-            <div class="empty-preview" id="empty-preview" aria-hidden="true"><span>Ảnh xem trước sẽ hiện tại đây</span>
+            <div class="empty-preview" id="empty-preview" aria-hidden="true">
+              <span>Ảnh xem trước sẽ hiện tại đây</span>
             </div>
             <canvas id="preview-canvas" aria-label="Bản xem trước ảnh đã định dạng"></canvas>
+            <div class="crop-grid" aria-hidden="true"></div>
           </div>
+        </div>
+        <div id="crop-controls" class="crop-controls" hidden>
+          <span class="crop-hint">Kéo ảnh để chọn vùng giữ lại</span>
+          <button id="reset-crop" class="reset-crop-button" type="button">Đặt lại</button>
         </div>
         <button id="download-button" class="download-button" type="button" disabled>Tải ảnh JPG</button>
         <p id="status-message" class="message status" aria-live="polite"></p>
