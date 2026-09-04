@@ -1,0 +1,119 @@
+.background-sample--image {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .85) 0 34%, transparent 34%),
+    linear-gradient(35deg, #7dd3fc 0 42%, #22c55e 42% 67%, #f8fafc 67% 100%);
+}
+
+.background-sample--image::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, .12);
+}
+
+.image-background-controls {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+}
+
+.image-background-controls[hidden] {
+  display: none;
+}
+
+.image-background-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.image-background-copy strong {
+  color: var(--ink);
+  font-size: .82rem;
+}
+
+.image-background-copy span {
+  color: var(--muted);
+  font-size: .76rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.image-background-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#image-background-input {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+}
+
+.image-background-picker,
+.image-background-clear {
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--choice-text);
+  background: var(--control);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.image-background-picker {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  background: var(--choice-selected);
+}
+
+.image-background-clear {
+  color: var(--muted);
+}
+
+.image-background-clear[hidden] {
+  display: none;
+}
+
+.image-background-picker:focus-within,
+.image-background-clear:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .image-background-picker:hover,
+  .image-background-clear:hover {
+    border-color: var(--line-strong);
+  }
+}
+
+@media (max-width: 540px) {
+  .image-background-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .image-background-picker,
+  .image-background-clear {
+    min-height: 46px;
+  }
+}
