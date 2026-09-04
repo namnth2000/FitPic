@@ -23,6 +23,11 @@
   const customColorPalette = document.querySelector('#custom-color-palette');
   const customColorInput = document.querySelector('#custom-color-input');
   const customColorHex = document.querySelector('#custom-color-hex');
+  const imageBackgroundControls = document.querySelector('#image-background-controls');
+  const imageBackgroundInput = document.querySelector('#image-background-input');
+  const imageBackgroundAction = document.querySelector('#image-background-action');
+  const imageBackgroundName = document.querySelector('#image-background-name');
+  const clearImageBackgroundButton = document.querySelector('#clear-image-background');
   const cropControls = document.querySelector('#crop-controls');
   const resetCropButton = document.querySelector('#reset-crop');
   const previewFrame = document.querySelector('.preview-frame');
@@ -67,6 +72,7 @@
     platformId: 'instagram-feed',
     backgroundId: 'blur',
     customColor: defaultCustomColor,
+    backgroundImage: null,
     pendingShareFiles: null,
     cropDrag: null,
   };
@@ -212,11 +218,23 @@
     });
   }
 
+  function syncImageBackgroundControls() {
+    const isImageBased = state.backgroundId === 'image';
+    imageBackgroundControls.hidden = !isImageBased;
+    const background = state.backgroundImage;
+    imageBackgroundAction.textContent = background ? 'Thay ảnh nền' : 'Chọn ảnh nền';
+    imageBackgroundName.textContent = background
+      ? background.file.name
+      : 'Ảnh nền sẽ được căn giữa và cover toàn bộ khung.';
+    clearImageBackgroundButton.hidden = !background;
+  }
+
   function syncEditorControls() {
     customColorControls.hidden = state.backgroundId !== 'custom';
     customColorInput.value = state.customColor;
     customColorHex.value = state.customColor;
     customColorHex.classList.remove('is-invalid');
+    syncImageBackgroundControls();
 
     const isCrop = state.backgroundId === 'crop' && Boolean(activeImageEntry());
     cropControls.hidden = !isCrop;
@@ -229,6 +247,12 @@
     resetCropButton.disabled = !entry || (entry.cropX === 0.5 && entry.cropY === 0.5);
   }
 
+  function isExportReady() {
+    if (!state.images.length) return false;
+    if (state.backgroundId === 'image' && !state.backgroundImage) return false;
+    return true;
+  }
+
   function updateDownloadUi() {
     const count = state.images.length;
     const useNativeShare = prefersNativeImageShare();
@@ -237,6 +261,7 @@
     } else {
       downloadButton.textContent = count > 1 ? `Tải ${count} ảnh JPG` : 'Tải ảnh JPG';
     }
+    downloadButton.disabled = !isExportReady();
   }
 
   function updatePreviewUi() {
@@ -246,8 +271,26 @@
     previewCounter.textContent = count ? `${state.previewIndex + 1} / ${count}` : '0 / 0';
     previousPreviewButton.disabled = state.previewIndex <= 0;
     nextPreviewButton.disabled = state.previewIndex >= count - 1;
-    previewNote.textContent = state.backgroundId === 'crop' ? 'Crop' : 'Không crop';
+
+    if (state.backgroundId === 'crop') {
+      previewNote.textContent = 'Crop';
+    } else if (state.backgroundId === 'image') {
+      previewNote.textContent = 'Image-based';
+    } else {
+      previewNote.textContent = 'Không crop';
+    }
     syncEditorControls();
+  }
+
+  function drawImageBasedBackground(context, width, height) {
+    const background = state.backgroundImage?.image;
+    if (!background) {
+      context.fillStyle = '#dfe6e2';
+      context.fillRect(0, 0, width, height);
+      return;
+    }
+    const cover = getCoverRect(background.naturalWidth, background.naturalHeight, width, height);
+    context.drawImage(background, cover.x, cover.y, cover.width, cover.height);
   }
 
   function drawComposition(canvas, longEdge, entry) {
@@ -289,6 +332,8 @@
     } else if (state.backgroundId === 'custom') {
       context.fillStyle = state.customColor;
       context.fillRect(0, 0, width, height);
+    } else if (state.backgroundId === 'image') {
+      drawImageBasedBackground(context, width, height);
     } else {
       const background = getCoverRect(image.naturalWidth, image.naturalHeight, width, height);
       context.fillStyle = '#111827';
@@ -312,7 +357,7 @@
     updatePreviewUi();
   }
 
-  async function decodeImage(file) {
+  async function loadImageFile(file, includeCropState = false) {
     const url = URL.createObjectURL(file);
     const image = new Image();
     image.decoding = 'async';
@@ -322,21 +367,24 @@
         image.onerror = reject;
         image.src = url;
       });
-      return {
-        file,
-        image,
-        objectUrl: url,
-        cropX: 0.5,
-        cropY: 0.5,
-      };
+      const entry = { file, image, objectUrl: url };
+      if (includeCropState) {
+        entry.cropX = 0.5;
+        entry.cropY = 0.5;
+      }
+      return entry;
     } catch (error) {
       URL.revokeObjectURL(url);
       throw error;
     }
   }
 
+  function releaseImageEntry(entry) {
+    if (entry?.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+  }
+
   function releaseImages(images = state.images) {
-    images.forEach((entry) => URL.revokeObjectURL(entry.objectUrl));
+    images.forEach(releaseImageEntry);
   }
 
   async function onUpload(event) {
@@ -360,7 +408,7 @@
     try {
       for (const file of supportedFiles) {
         try {
-          const entry = await decodeImage(file);
+          const entry = await loadImageFile(file, true);
           if (!entry.image.naturalWidth || !entry.image.naturalHeight) throw new Error('Empty image');
           decoded.push(entry);
         } catch (error) {
@@ -384,7 +432,6 @@
         ? `${first.file.name} - ${first.image.naturalWidth} × ${first.image.naturalHeight}px`
         : `${decoded.length} ảnh đã chọn. Dùng mũi tên ở preview để xem từng ảnh; tỉ lệ và chế độ nền áp dụng cho cả batch.`;
       editor.hidden = false;
-      downloadButton.disabled = false;
       updateDownloadUi();
       renderPreview();
 
@@ -397,6 +444,50 @@
     } finally {
       uploadLabel.classList.remove('is-loading');
     }
+  }
+
+  async function onImageBackgroundUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError('');
+
+    if (!supportedImageTypes.has(file.type)) {
+      event.target.value = '';
+      setError('Hãy chọn ảnh nền hợp lệ (JPG, PNG, WebP hoặc GIF).');
+      return;
+    }
+
+    setStatus('Đang đọc ảnh nền trên thiết bị của bạn...');
+    try {
+      const nextBackground = await loadImageFile(file, false);
+      if (!nextBackground.image.naturalWidth || !nextBackground.image.naturalHeight) {
+        releaseImageEntry(nextBackground);
+        throw new Error('Empty image');
+      }
+
+      releaseImageEntry(state.backgroundImage);
+      state.backgroundImage = nextBackground;
+      state.backgroundId = 'image';
+      invalidatePendingShare();
+      updateChoiceButtons();
+      updateDownloadUi();
+      renderPreview();
+      setStatus(`Đang dùng ${file.name} làm ảnh nền cho toàn bộ batch.`);
+    } catch (error) {
+      event.target.value = '';
+      setError('Không thể đọc ảnh nền. Hãy thử file ảnh khác.');
+      setStatus('');
+    }
+  }
+
+  function clearImageBackground() {
+    releaseImageEntry(state.backgroundImage);
+    state.backgroundImage = null;
+    imageBackgroundInput.value = '';
+    invalidatePendingShare();
+    updateDownloadUi();
+    renderPreview();
+    setStatus('Đã xóa ảnh nền. Chọn ảnh nền mới để tiếp tục với Image-based.');
   }
 
   function changePlatform(event) {
@@ -415,12 +506,17 @@
     state.backgroundId = button.dataset.background;
     invalidatePendingShare();
     updateChoiceButtons();
+    updateDownloadUi();
     renderPreview();
 
     if (state.backgroundId === 'crop') {
       setStatus('Crop phủ kín khung. Kéo ảnh trong preview để chọn vùng giữ lại.');
     } else if (state.backgroundId === 'custom') {
       setStatus(`Đang dùng nền ${state.customColor}.`);
+    } else if (state.backgroundId === 'image') {
+      setStatus(state.backgroundImage
+        ? `Đang dùng ${state.backgroundImage.file.name} làm ảnh nền cho toàn bộ batch.`
+        : 'Chọn một ảnh nền để dùng chế độ Image-based.');
     } else {
       setStatus(`Đã đổi nền thành ${button.textContent.trim()}.`);
     }
@@ -433,6 +529,7 @@
     state.backgroundId = 'custom';
     invalidatePendingShare();
     updateChoiceButtons();
+    updateDownloadUi();
     renderPreview();
     setStatus(`Đang dùng nền ${normalized}.`);
     return true;
@@ -620,6 +717,11 @@
 
   async function downloadImages() {
     if (!state.images.length) return;
+    if (!isExportReady()) {
+      setError('Hãy chọn ảnh nền trước khi lưu với chế độ Image-based.');
+      setStatus('');
+      return;
+    }
 
     if (state.pendingShareFiles && canShareFiles(state.pendingShareFiles)) {
       const cachedFiles = state.pendingShareFiles;
@@ -679,7 +781,7 @@
       setError('Không thể tạo đầy đủ file ảnh. Hãy thử lại.');
       setStatus('');
     } finally {
-      downloadButton.disabled = false;
+      updateDownloadUi();
     }
   }
 
@@ -712,6 +814,8 @@
       changeHexColor();
     }
   });
+  imageBackgroundInput.addEventListener('change', onImageBackgroundUpload);
+  clearImageBackgroundButton.addEventListener('click', clearImageBackground);
   previousPreviewButton.addEventListener('click', previousPreview);
   nextPreviewButton.addEventListener('click', nextPreview);
   resetCropButton.addEventListener('click', resetCrop);
@@ -729,6 +833,7 @@
   window.addEventListener('beforeunload', () => {
     invalidatePendingShare();
     releaseImages();
+    releaseImageEntry(state.backgroundImage);
   });
 
   initializeTheme();
