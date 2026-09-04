@@ -19,8 +19,32 @@
   const themeToggle = document.querySelector('#theme-toggle');
 
   const defaultCustomColor = '#7C3AED';
-  const themeColors = ['#111827', '#6B7280', '#B91C1C', '#C2410C', '#B45309', '#4D7C0F', '#047857', '#0F766E', '#0E7490', '#1D4ED8', '#4338CA', '#6D28D9'];
-  const standardColors = ['#DC2626', '#F97316', '#FACC15', '#84CC16', '#16A34A', '#14B8A6', '#06B6D4', '#2563EB', '#4F46E5', '#9333EA', '#DB2777'];
+  const paletteColors = [
+    { name: 'Ivory', value: '#FFF8E7' },
+    { name: 'Sand', value: '#EAD8C0' },
+    { name: 'Peach', value: '#FFC7A8' },
+    { name: 'Coral', value: '#FF7F6A' },
+    { name: 'Rose', value: '#F9A8B8' },
+    { name: 'Lavender', value: '#D8B4FE' },
+    { name: 'Sky', value: '#BAE6FD' },
+    { name: 'Mint', value: '#A7F3D0' },
+    { name: 'Red', value: '#EF4444' },
+    { name: 'Orange', value: '#F97316' },
+    { name: 'Amber', value: '#F59E0B' },
+    { name: 'Lime', value: '#84CC16' },
+    { name: 'Emerald', value: '#10B981' },
+    { name: 'Cyan', value: '#06B6D4' },
+    { name: 'Blue', value: '#3B82F6' },
+    { name: 'Violet', value: '#7C3AED' },
+    { name: 'Burgundy', value: '#9F1239' },
+    { name: 'Magenta', value: '#C026D3' },
+    { name: 'Purple', value: '#9333EA' },
+    { name: 'Indigo', value: '#4F46E5' },
+    { name: 'Navy', value: '#1E3A8A' },
+    { name: 'Teal', value: '#0F766E' },
+    { name: 'Olive', value: '#657A2E' },
+    { name: 'Charcoal', value: '#1F2937' },
+  ];
 
   const state = {
     images: [],
@@ -114,9 +138,8 @@
   }
 
   function renderCustomPalette() {
-    const colors = [...themeColors, ...standardColors];
-    customColorPalette.innerHTML = colors.map((color) => (
-      `<button type="button" class="palette-swatch" data-custom-color="${color}" style="--picker-color:${color}" aria-label="Dùng màu ${color}"></button>`
+    customColorPalette.innerHTML = paletteColors.map((color) => (
+      `<button type="button" class="palette-swatch" data-custom-color="${color.value}" style="--picker-color:${color.value}" aria-label="Dùng màu ${color.name}, ${color.value}"></button>`
     )).join('');
   }
 

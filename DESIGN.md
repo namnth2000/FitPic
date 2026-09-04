@@ -87,7 +87,13 @@ Keep the four choices together:
 
 When Custom is selected, reveal the palette inline below the choices. Do not open a large modal.
 
-The custom palette reuses the base color set from StyleSpec but is intentionally more compact for FitPic. Keep the native color input and HEX input available for colors outside the preset palette.
+The custom palette contains 24 commonly useful colors arranged as three visually coherent rows:
+
+- Soft / light: Ivory, Sand, Peach, Coral, Rose, Lavender, Sky, Mint
+- Vivid spectrum: Red, Orange, Amber, Lime, Emerald, Cyan, Blue, Violet
+- Rich / deep: Burgundy, Magenta, Purple, Indigo, Navy, Teal, Olive, Charcoal
+
+Keep the native color input and HEX input available for colors outside the preset palette.
 
 ### Batch behavior
 
