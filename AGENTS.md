@@ -25,8 +25,11 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Foreground rendering uses center + contain + maximum possible size, never crop.
 - Blur Original is the default background.
 - Custom background uses a compact palette based on the StyleSpec color set, plus native color and HEX input.
-- Multiple uploaded images share the same selected ratio and background. Preview shows the first image and download exports every selected image as an individual JPG.
-- Do not add ZIP generation or a new dependency only for batch export unless real usage proves separate browser downloads are insufficient.
+- Multiple uploaded images share the same selected ratio and background. Preview shows the first image and export creates every selected image as an individual JPG.
+- On iPhone/iPad, prefer the Web Share API with the generated JPG `File` objects so one native share sheet receives the full batch and can offer Photos actions such as Save Image / Save Images.
+- Desktop and browsers without file sharing keep the individual-download fallback.
+- If Safari loses the user activation while export files are being prepared, cache the prepared files so the next tap can open `navigator.share()` immediately without re-rendering the batch.
+- Do not add ZIP generation or a new dependency only for batch export unless real usage proves native share plus individual-download fallback are insufficient.
 - Preview canvas uses a 960px long edge. Download renders each composition again at a 2160px long edge.
 - Output examples at 2160px long edge: 1:1 = 2160×2160, 4:5 = 1728×2160, 9:16 = 1215×2160, 16:9 = 2160×1215, 4:3 = 2160×1620, 3:4 = 1620×2160.
 - Theme defaults to `prefers-color-scheme`; an explicit user choice is stored locally under `fitpic-theme`.
@@ -36,7 +39,8 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 
 - Platform image recommendations can change over time. Keep platform-to-ratio mapping centralized and easy to update.
 - Large batches and large source images can increase browser memory usage. Prefer simple sequential decode/export before introducing optimization infrastructure.
-- Browsers can ask the user to allow multiple downloads when exporting a batch.
+- Web Share file support varies by browser. Keep the existing individual-download fallback for unsupported environments.
+- iOS still requires the user to choose the final action in the native share sheet; a web app cannot silently write directly into Photos.
 
 # Before completing a task
 

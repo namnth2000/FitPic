@@ -7,7 +7,7 @@
 - **Vấn đề:** Một ảnh có thể phù hợp với nội dung nhưng không phù hợp với tỉ lệ hiển thị của Facebook, Instagram, TikTok hoặc YouTube. Crop ảnh có thể làm mất phần nội dung người dùng muốn giữ, trong khi việc tự chỉnh canvas và background bằng công cụ chỉnh ảnh thường mất thêm thao tác. Khi có nhiều ảnh cùng cần một định dạng, lặp lại quy trình từng ảnh cũng gây tốn thời gian.
 - **Người dùng mục tiêu:** Người dùng mạng xã hội, người bán hàng online và người sáng tạo nội dung cần chuẩn bị ảnh nhanh để đăng lên các nền tảng phổ biến.
 - **Giải pháp chính:** Người dùng tải một hoặc nhiều ảnh lên, chọn placement / tỉ lệ và background. FitPic giữ toàn bộ ảnh, căn giữa ảnh trong khung, preview ảnh đầu tiên và tạo file đầu ra cho toàn bộ batch ngay trên thiết bị.
-- **Mục tiêu của phiên bản này:** Giữ luồng đơn giản nhưng mở rộng đủ để xử lý batch và thêm các tỉ lệ/background thường dùng: **Upload ảnh -> Chọn tỉ lệ / placement -> Chọn background -> Preview -> Download**.
+- **Mục tiêu của phiên bản này:** Giữ luồng đơn giản nhưng mở rộng đủ để xử lý batch và thêm các tỉ lệ/background thường dùng: **Upload ảnh -> Chọn tỉ lệ / placement -> Chọn background -> Preview -> Save / Download**.
 
 # 2. Phạm vi sản phẩm
 
@@ -20,7 +20,7 @@
 5. Nếu chọn Custom, người dùng có thể chọn màu preset, dùng system color picker hoặc nhập HEX.
 6. FitPic cập nhật preview theo tỉ lệ và background đã chọn mà không crop ảnh.
 7. Nếu người dùng chọn nhiều ảnh, cùng một tỉ lệ và background được áp dụng cho toàn bộ batch.
-8. Người dùng tải một ảnh hoặc toàn bộ batch xuống thiết bị. Mỗi ảnh trong batch được xuất thành một file JPG riêng.
+8. FitPic tạo một JPG riêng cho từng ảnh. Trên iPhone/iPad hỗ trợ file sharing, FitPic gửi toàn bộ các file vào một native share sheet để người dùng có thể lưu/chia sẻ cả batch trong một thao tác. Trên desktop hoặc browser không hỗ trợ, FitPic dùng download fallback.
 
 ## Yêu cầu chức năng
 
@@ -75,7 +75,7 @@ Có bốn lựa chọn:
 
 Custom background:
 
-- Có palette preset nhỏ dựa trên color set hiện có của StyleSpec.
+- Có palette preset nhỏ với các màu phổ biến, được sắp theo nhóm sáng/pastel, màu tươi và màu đậm.
 - Có system color picker.
 - Có ô nhập HEX.
 - Màu custom phải được phản ánh ngay trong preview và được dùng khi export.
@@ -85,8 +85,11 @@ Custom background:
 - Cùng một platform / tỉ lệ và background áp dụng cho tất cả ảnh trong batch.
 - Preview chỉ hiển thị ảnh hợp lệ đầu tiên để giữ giao diện gọn.
 - UI phải nói rõ preview đang đại diện cho batch và cùng thiết lập sẽ áp dụng cho tất cả ảnh.
-- Download button hiển thị số ảnh khi batch có nhiều hơn một ảnh.
-- Mỗi ảnh được render riêng ở độ phân giải export và tải xuống thành JPG riêng.
+- Save / Download button hiển thị số ảnh khi batch có nhiều hơn một ảnh.
+- Mỗi ảnh được render riêng ở độ phân giải export và tạo thành một JPG riêng.
+- Trên iPhone/iPad có Web Share file support, toàn bộ JPG được truyền vào một lần `navigator.share({ files })` thay vì giả lập nhiều lần download liên tiếp.
+- Nếu việc chuẩn bị file làm Safari mất transient user activation, FitPic giữ tạm các file đã render để lần tap tiếp theo có thể mở share sheet ngay mà không render lại.
+- Trên desktop hoặc browser không hỗ trợ chia sẻ file, FitPic giữ individual-download fallback.
 - Không tạo ZIP trong phiên bản này.
 - Không có per-image ratio, per-image background, reorder hoặc thumbnail manager trong phiên bản này.
 
@@ -96,13 +99,16 @@ Custom background:
 - Preview được cập nhật khi người dùng đổi platform / placement, tỉ lệ hoặc background.
 - Preview không được làm thay đổi ảnh gốc của người dùng.
 
-### 7. Download
+### 7. Save / Download
 
-- Người dùng có thể tải ảnh kết quả sau khi đã upload ít nhất một ảnh hợp lệ.
-- File tải xuống phải giữ đúng aspect ratio đang được chọn và đúng composition tương ứng với preview.
+- Người dùng có thể lưu hoặc tải ảnh kết quả sau khi đã upload ít nhất một ảnh hợp lệ.
+- File đầu ra phải giữ đúng aspect ratio đang được chọn và đúng composition tương ứng với preview.
 - Với batch, FitPic tạo một file JPG cho từng ảnh.
-- Quá trình download không yêu cầu tài khoản, đăng nhập hoặc upload ảnh lên server.
-- Trình duyệt có thể hỏi người dùng cho phép tải nhiều file khi batch có nhiều ảnh.
+- Trên iPhone/iPad hỗ trợ Web Share, nút sử dụng wording `Lưu ảnh` / `Lưu N ảnh` và mở native share sheet. Người dùng tự chọn hành động cuối cùng như Save Image / Save Images, AirDrop hoặc ứng dụng khác.
+- FitPic không được tuyên bố đã lưu vào Photos chỉ vì share sheet đã mở.
+- Web app không tự ghi ảnh âm thầm vào Photos; hành động cuối cùng vẫn cần người dùng xác nhận trong giao diện hệ thống của iOS.
+- Trên browser không hỗ trợ file sharing, FitPic dùng download fallback như trước.
+- Quá trình save / download không yêu cầu tài khoản, đăng nhập hoặc upload ảnh lên server.
 
 ## Quy tắc sản phẩm
 
@@ -114,6 +120,7 @@ Custom background:
 - Không crop ảnh tự động hoặc thủ công.
 - Không có margin hoặc padding thẩm mỹ mặc định quanh ảnh.
 - Batch dùng chung một bộ thiết lập, không biến FitPic thành asset manager.
+- Mobile Apple devices ưu tiên native share sheet cho image export; desktop giữ download behavior quen thuộc.
 - Ảnh của người dùng chỉ được xử lý trên thiết bị và không được gửi lên hoặc lưu trên server.
 
 ## Ngoài phạm vi
@@ -126,6 +133,7 @@ Custom background:
 - Per-image settings trong batch.
 - Thumbnail browser, reorder hoặc quản lý asset.
 - ZIP export.
+- Tự động ghi thẳng ảnh vào iOS Photos mà không qua user action.
 - Xuất một ảnh thành nhiều social sizes cùng lúc.
 - Tài khoản người dùng.
 - Lịch sử xử lý ảnh.
@@ -135,17 +143,19 @@ Custom background:
 # 3. UI/UX
 
 - **Nền tảng và thiết bị:** Web, sử dụng được trên desktop và mobile.
-- **Màn hình hoặc khu vực chính:** Header với wordmark FitPic và nút đổi chủ đề; mô tả ngắn; khu vực upload; khu vực chọn tỉ lệ / placement; khu vực chọn background; custom palette khi cần; preview; nút download.
+- **Màn hình hoặc khu vực chính:** Header với wordmark FitPic và nút đổi chủ đề; mô tả ngắn; khu vực upload; khu vực chọn tỉ lệ / placement; khu vực chọn background; custom palette khi cần; preview; nút save / download.
 - **Bố cục và thao tác chính:** Tập trung vào một luồng ngắn trên cùng một trang. Không chuyển sang editor phức tạp.
 - **Khu chọn tỉ lệ:** Pattern compact giống hướng tham khảo CapCut - icon mạng xã hội trong khung, ratio ở dưới, trạng thái selected rõ ràng.
 - **Custom color:** Hiển thị inline và gọn trong panel background, không dùng modal lớn.
+- **Export trên iPhone/iPad:** Dùng wording `Lưu ảnh` / `Lưu N ảnh` và native share sheet thay vì hiển thị nhiều download riêng lẻ.
 - **Trạng thái cần hiển thị:**
   - Chưa có ảnh: hiển thị khu vực upload rõ ràng.
   - Đã có một ảnh: hiển thị preview và các lựa chọn cần thiết.
   - Đã có nhiều ảnh: hiển thị số lượng, nói rõ preview dùng ảnh đầu tiên và cùng thiết lập áp dụng cho tất cả.
   - Đang đọc/export ảnh: phản hồi trạng thái ngắn gọn.
   - File không hợp lệ hoặc không đọc được: hiển thị lỗi rõ ràng và cho phép chọn lại ảnh.
-  - Sẵn sàng tải xuống: nút Download khả dụng và có count khi batch.
+  - Sẵn sàng save/download: nút khả dụng và có count khi batch.
+  - Safari cần tap lại để khôi phục user activation: thông báo rõ ảnh đã chuẩn bị xong và yêu cầu tap lại, không render batch lần nữa.
 - **Brand và tài nguyên:**
   - Logo: wordmark chữ **FitPic**.
   - Brand color: `#047857`, chỉ dùng làm màu nhấn.
@@ -157,8 +167,8 @@ Custom background:
 
 - **Dữ liệu đầu vào:** Một hoặc nhiều ảnh do người dùng chọn từ thiết bị, cùng lựa chọn platform / tỉ lệ, background và custom color nếu có.
 - **Dữ liệu đầu ra:** Một hoặc nhiều file JPG mới theo aspect ratio đã chọn, giữ toàn bộ nội dung ảnh gốc và sử dụng background tương ứng.
-- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend.
-- **Tích hợp bên ngoài:** Không có API hoặc dịch vụ trả phí.
+- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend. File đã render có thể được giữ tạm trong memory của trang để retry native share nếu Safari cần tap lại; chúng bị bỏ khi lựa chọn ảnh/ratio/background thay đổi hoặc khi trang đóng.
+- **Tích hợp bên ngoài:** Không có API hoặc dịch vụ trả phí. iOS native share sheet là browser/OS capability, không phải upload lên dịch vụ FitPic.
 - **Yêu cầu quyền riêng tư hoặc bảo mật:** Ảnh phải được xử lý trên thiết bị của người dùng, không upload hoặc gửi nội dung ảnh tới server. Không yêu cầu tài khoản hoặc đăng nhập.
 
 # 5. Tiêu chí hoàn thành
@@ -166,7 +176,7 @@ Custom background:
 - [ ] Người dùng có thể upload một hoặc nhiều ảnh hợp lệ.
 - [ ] Nếu batch chứa file lỗi, các file hợp lệ vẫn dùng được và số file bị bỏ qua được thông báo.
 - [ ] Preview hiển thị ảnh hợp lệ đầu tiên và nói rõ cùng thiết lập áp dụng cho batch.
-- [ ] Có các lựa chọn mới Instagram `1:1`, YouTube `4:3` và YouTube `3:4`.
+- [ ] Có các lựa chọn Instagram `1:1`, YouTube `4:3` và YouTube `3:4`.
 - [ ] Khu chọn tỉ lệ hiển thị icon mạng xã hội trong tile và ratio bên dưới.
 - [ ] Tất cả platform / placement áp dụng đúng aspect ratio được định nghĩa trong `fitpic-core.js`.
 - [ ] Ảnh foreground luôn giữ nguyên aspect ratio, được căn giữa, phóng lớn tối đa trong khung và không bị crop.
@@ -174,8 +184,11 @@ Custom background:
 - [ ] Custom background hỗ trợ preset palette, system color picker và HEX.
 - [ ] Preview cập nhật đúng khi thay đổi tỉ lệ hoặc background.
 - [ ] Với batch, cùng một tỉ lệ và background áp dụng cho tất cả ảnh.
-- [ ] Download một ảnh vẫn hoạt động.
-- [ ] Download batch tạo một JPG riêng cho từng ảnh với đúng tỉ lệ và background.
+- [ ] Export một ảnh vẫn hoạt động.
+- [ ] Batch export tạo một JPG riêng cho từng ảnh với đúng tỉ lệ và background.
+- [ ] Trên iPhone/iPad có file-share support, một lần native share nhận được toàn bộ các JPG trong batch thay vì chỉ file đầu tiên.
+- [ ] Trên iPhone/iPad, single-image export cũng đi qua native share sheet để người dùng có thể chọn Save Image / Photos khi iOS cung cấp action đó.
+- [ ] Nếu native share không khả dụng, individual-download fallback vẫn hoạt động.
 - [ ] Ảnh được xử lý trên thiết bị và không bị upload hoặc lưu trên server.
 - [ ] Không yêu cầu tài khoản, đăng nhập hoặc backend.
 - [ ] Giao diện sử dụng được trên desktop và mobile.

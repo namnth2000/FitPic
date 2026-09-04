@@ -51,6 +51,7 @@
     platformId: 'instagram-feed',
     backgroundId: 'blur',
     customColor: defaultCustomColor,
+    pendingShareFiles: null,
   };
 
   const previewLongEdge = 960;
@@ -59,6 +60,30 @@
 
   function prefersDarkTheme() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function isAppleMobileDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  function prefersNativeImageShare() {
+    return isAppleMobileDevice()
+      && typeof navigator.share === 'function'
+      && typeof navigator.canShare === 'function';
+  }
+
+  function canShareFiles(files) {
+    if (!prefersNativeImageShare() || !files?.length) return false;
+    try {
+      return navigator.canShare({ files });
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function invalidatePendingShare() {
+    state.pendingShareFiles = null;
   }
 
   function updateThemeToggle() {
@@ -175,7 +200,12 @@
 
   function updateDownloadUi() {
     const count = state.images.length;
-    downloadButton.textContent = count > 1 ? `Tải ${count} ảnh JPG` : 'Tải ảnh JPG';
+    const useNativeShare = prefersNativeImageShare();
+    if (useNativeShare) {
+      downloadButton.textContent = count > 1 ? `Lưu ${count} ảnh` : 'Lưu ảnh';
+    } else {
+      downloadButton.textContent = count > 1 ? `Tải ${count} ảnh JPG` : 'Tải ảnh JPG';
+    }
     previewNote.textContent = count > 1 ? `${count} ảnh · Không crop` : 'Không crop';
   }
 
@@ -281,6 +311,7 @@
       }
 
       releaseImages();
+      invalidatePendingShare();
       state.images = decoded;
       const first = decoded[0];
       fileName.textContent = decoded.length === 1
@@ -295,7 +326,7 @@
         setError(`${failedCount} file không hợp lệ hoặc không đọc được đã được bỏ qua.`);
       }
       setStatus(decoded.length > 1
-        ? `${decoded.length} ảnh đã sẵn sàng. Chọn tỉ lệ và nền rồi tải tất cả ảnh.`
+        ? `${decoded.length} ảnh đã sẵn sàng. Chọn tỉ lệ và nền rồi lưu tất cả ảnh.`
         : 'Ảnh đã sẵn sàng. Chọn tỉ lệ và nền để xem kết quả.');
     } finally {
       uploadLabel.classList.remove('is-loading');
@@ -306,6 +337,7 @@
     const button = event.target.closest('[data-platform]');
     if (!button || !activeImageEntry()) return;
     state.platformId = button.dataset.platform;
+    invalidatePendingShare();
     updateChoiceButtons();
     renderPreview();
     setStatus(`Đã chọn ${getPlatform(state.platformId).name}, tỉ lệ ${ratioLabel()}.`);
@@ -315,6 +347,7 @@
     const button = event.target.closest('[data-background]');
     if (!button || !activeImageEntry()) return;
     state.backgroundId = button.dataset.background;
+    invalidatePendingShare();
     updateChoiceButtons();
     syncCustomColorControls();
     renderPreview();
@@ -326,6 +359,7 @@
     if (!normalized) return false;
     state.customColor = normalized;
     state.backgroundId = 'custom';
+    invalidatePendingShare();
     updateChoiceButtons();
     syncCustomColorControls();
     renderPreview();
@@ -359,39 +393,126 @@
     return safe || 'image';
   }
 
-  async function exportEntry(entry, index) {
+  function exportFileName(entry, index) {
+    const indexSuffix = state.images.length > 1 ? `-${index + 1}` : '';
+    return `fitpic-${sourceBaseName(entry.file.name)}-${state.platformId}-${ratioLabel().replace(':', 'x')}${indexSuffix}.jpg`;
+  }
+
+  async function buildExportFile(entry, index) {
     const exportCanvas = document.createElement('canvas');
     drawComposition(exportCanvas, exportLongEdge, entry.image);
     const blob = await canvasToBlob(exportCanvas);
     if (!blob) throw new Error('Blob creation failed');
+    return new File([blob], exportFileName(entry, index), {
+      type: 'image/jpeg',
+      lastModified: Date.now(),
+    });
+  }
 
+  async function buildExportFiles() {
+    const files = [];
+    for (let index = 0; index < state.images.length; index += 1) {
+      files.push(await buildExportFile(state.images[index], index));
+    }
+    return files;
+  }
+
+  function downloadFile(file) {
     const link = document.createElement('a');
-    const downloadUrl = URL.createObjectURL(blob);
-    const indexSuffix = state.images.length > 1 ? `-${index + 1}` : '';
+    const downloadUrl = URL.createObjectURL(file);
     link.href = downloadUrl;
-    link.download = `fitpic-${sourceBaseName(entry.file.name)}-${state.platformId}-${ratioLabel().replace(':', 'x')}${indexSuffix}.jpg`;
+    link.download = file.name;
     document.body.append(link);
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   }
 
+  function downloadFiles(files) {
+    files.forEach(downloadFile);
+  }
+
+  async function shareExportFiles(files) {
+    await navigator.share({ files });
+  }
+
+  function handleShareFailure(error, files) {
+    if (error?.name === 'AbortError') {
+      state.pendingShareFiles = files;
+      setStatus('Đã hủy lưu/chia sẻ. Nhấn lại nếu bạn muốn mở menu lưu ảnh.');
+      return true;
+    }
+
+    if (error?.name === 'NotAllowedError') {
+      state.pendingShareFiles = files;
+      setStatus(`Ảnh đã sẵn sàng. Nhấn lại "${downloadButton.textContent}" để mở menu lưu ảnh.`);
+      return true;
+    }
+
+    return false;
+  }
+
   async function downloadImages() {
     if (!state.images.length) return;
+
+    // If Safari dropped the original user activation while the JPEGs were being
+    // prepared, the second tap can call navigator.share immediately with cached files.
+    if (state.pendingShareFiles && canShareFiles(state.pendingShareFiles)) {
+      const cachedFiles = state.pendingShareFiles;
+      state.pendingShareFiles = null;
+      try {
+        await shareExportFiles(cachedFiles);
+        setStatus(cachedFiles.length > 1
+          ? `Đã mở menu lưu/chia sẻ cho ${cachedFiles.length} ảnh.`
+          : 'Đã mở menu lưu/chia sẻ ảnh.');
+      } catch (error) {
+        if (!handleShareFailure(error, cachedFiles)) {
+          downloadFiles(cachedFiles);
+          setStatus(cachedFiles.length > 1
+            ? 'Không thể mở menu chia sẻ. FitPic đã dùng cách tải file dự phòng.'
+            : 'Không thể mở menu chia sẻ. FitPic đã tải file dự phòng.');
+        }
+      }
+      return;
+    }
+
     downloadButton.disabled = true;
     setError('');
-    setStatus(state.images.length > 1 ? `Đang tạo ${state.images.length} file để tải xuống...` : 'Đang tạo file để tải xuống...');
+    const wantsNativeShare = prefersNativeImageShare();
+    setStatus(state.images.length > 1
+      ? `Đang chuẩn bị ${state.images.length} ảnh...`
+      : 'Đang chuẩn bị ảnh...');
 
     await new Promise((resolve) => window.requestAnimationFrame(resolve));
     try {
-      for (let index = 0; index < state.images.length; index += 1) {
-        await exportEntry(state.images[index], index);
+      const files = await buildExportFiles();
+
+      if (wantsNativeShare && canShareFiles(files)) {
+        state.pendingShareFiles = files;
+        try {
+          await shareExportFiles(files);
+          state.pendingShareFiles = null;
+          setStatus(files.length > 1
+            ? `Đã mở menu lưu/chia sẻ cho ${files.length} ảnh.`
+            : 'Đã mở menu lưu/chia sẻ ảnh.');
+        } catch (error) {
+          if (!handleShareFailure(error, files)) {
+            state.pendingShareFiles = null;
+            downloadFiles(files);
+            setStatus(files.length > 1
+              ? 'Không thể mở menu chia sẻ. FitPic đã dùng cách tải file dự phòng.'
+              : 'Không thể mở menu chia sẻ. FitPic đã tải file dự phòng.');
+          }
+        }
+      } else {
+        downloadFiles(files);
+        setStatus(files.length > 1
+          ? `${files.length} ảnh đã được tạo. Trình duyệt có thể hỏi quyền tải nhiều file.`
+          : 'Ảnh đã được tạo để tải xuống.');
       }
-      setStatus(state.images.length > 1
-        ? `${state.images.length} ảnh đã được tạo. Trình duyệt có thể hỏi quyền tải nhiều file.`
-        : 'Ảnh đã được tạo để tải xuống.');
     } catch (error) {
-      setError('Không thể tạo đầy đủ file tải xuống. Hãy thử lại.');
+      invalidatePendingShare();
+      setError('Không thể tạo đầy đủ file ảnh. Hãy thử lại.');
       setStatus('');
     } finally {
       downloadButton.disabled = false;
@@ -422,7 +543,10 @@
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     if (!document.documentElement.dataset.theme) updateThemeToggle();
   });
-  window.addEventListener('beforeunload', () => releaseImages());
+  window.addEventListener('beforeunload', () => {
+    invalidatePendingShare();
+    releaseImages();
+  });
 
   initializeTheme();
   renderChoices();
