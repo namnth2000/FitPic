@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung hoặc crop đúng vùng bạn muốn." />
+    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung, dùng ảnh nền riêng hoặc crop đúng vùng bạn muốn." />
   <meta name="application-name" content="FitPic" />
   <meta name="apple-mobile-web-app-title" content="FitPic" />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
@@ -16,18 +16,19 @@
   <meta property="og:site_name" content="FitPic" />
   <meta property="og:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
   <meta property="og:description"
-    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, giữ trọn nội dung hoặc crop đúng vùng bạn muốn." />
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng hoặc crop đúng vùng bạn muốn." />
   <meta property="og:url" content="https://fitpic.namnth.com/" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
   <meta name="twitter:description"
-    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, giữ trọn nội dung hoặc crop đúng vùng bạn muốn." />
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng hoặc crop đúng vùng bạn muốn." />
   <title>FitPic - Chỉnh kích thước ảnh mạng xã hội</title>
   <link rel="canonical" href="https://fitpic.namnth.com/" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="site.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="crop.css" />
+  <link rel="stylesheet" href="image-background.css" />
   <script src="fitpic-core.js" defer></script>
   <script src="app.js" defer></script>
   <script type="application/ld+json">
@@ -37,7 +38,7 @@
       "@id": "https://fitpic.namnth.com/#webapp",
       "name": "FitPic",
       "url": "https://fitpic.namnth.com/",
-      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội, hỗ trợ giữ trọn nội dung hoặc crop theo vị trí người dùng chọn.",
+      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội, hỗ trợ nền blur, màu, ảnh riêng và crop theo vị trí người dùng chọn.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
       "inLanguage": "vi",
@@ -45,6 +46,7 @@
       "featureList": [
         "Định dạng ảnh cho Instagram, TikTok, Facebook và YouTube",
         "Giữ nguyên toàn bộ nội dung ảnh với nền blur hoặc màu",
+        "Dùng một ảnh riêng làm background cho toàn bộ batch",
         "Crop phủ kín khung và kéo để chọn vùng giữ lại",
         "Resize nhiều ảnh cùng lúc với cùng thiết lập",
         "Xem trước từng ảnh trong batch bằng previous / next",
@@ -74,7 +76,7 @@
   </header>
   <main>
     <section class="product-description" aria-label="Giới thiệu FitPic">
-      <p>Chọn một hoặc nhiều ảnh, tỉ lệ, màu nền hoặc crop ảnh</p>
+      <p>Chọn một hoặc nhiều ảnh, tỉ lệ, nền hoặc crop ảnh</p>
     </section>
 
     <section class="workspace" aria-label="Tạo ảnh social media">
@@ -102,13 +104,26 @@
               <div class="custom-color-row">
                 <label class="native-color-field" for="custom-color-input">
                   <span>Màu</span>
-                  <input id="custom-color-input" type="color" value="#7C3AED" aria-label="Chọn màu nền" />
+                  <input id="custom-color-input" type="color" value="#FFF8E7" aria-label="Chọn màu nền" />
                 </label>
                 <label class="hex-field" for="custom-color-hex">
                   <span>HEX</span>
-                  <input id="custom-color-hex" type="text" inputmode="text" maxlength="7" value="#7C3AED"
+                  <input id="custom-color-hex" type="text" inputmode="text" maxlength="7" value="#FFF8E7"
                     autocomplete="off" spellcheck="false" aria-label="Mã màu HEX" />
                 </label>
+              </div>
+            </div>
+            <div id="image-background-controls" class="image-background-controls" hidden>
+              <div class="image-background-copy">
+                <strong>Ảnh nền riêng</strong>
+                <span id="image-background-name">Ảnh nền sẽ được căn giữa và cover toàn bộ khung.</span>
+              </div>
+              <div class="image-background-actions">
+                <label class="image-background-picker" for="image-background-input">
+                  <span id="image-background-action">Chọn ảnh nền</span>
+                </label>
+                <input id="image-background-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+                <button id="clear-image-background" class="image-background-clear" type="button" hidden>Xóa</button>
               </div>
             </div>
           </section>
