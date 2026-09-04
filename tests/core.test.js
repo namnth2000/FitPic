@@ -6,6 +6,7 @@ const {
   getContainRect,
   getCoverRect,
   getCropRect,
+  getInsetRect,
   getPlatform,
 } = require('../fitpic-core.js');
 
@@ -43,6 +44,16 @@ test('uses an exact output ratio with the requested long edge', () => {
 test('contain rectangle centers image at its largest uncropped size', () => {
   assertRectClose(getContainRect(1600, 900, 1728, 2160), { x: 0, y: 594, width: 1728, height: 972 });
   assertRectClose(getContainRect(900, 1600, 2160, 1215), { x: 738.28125, y: 0, width: 683.4375, height: 1215 });
+});
+
+test('balance inset uses the short canvas edge for equal padding on all sides', () => {
+  assertRectClose(getInsetRect(1728, 2160, 0.08), {
+    x: 138.24,
+    y: 138.24,
+    width: 1451.52,
+    height: 1883.52,
+  });
+  assert.deepEqual(getInsetRect(2160, 1215, -1), { x: 0, y: 0, width: 2160, height: 1215 });
 });
 
 test('centers a landscape foreground vertically inside a 9:16 canvas without cropping', () => {
