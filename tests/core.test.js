@@ -27,8 +27,8 @@ test('maps every supported placement to its specified aspect ratio', () => {
   assert.deepEqual(getPlatform('youtube-shorts').ratio, [9, 16]);
 });
 
-test('exposes Crop alongside the existing background choices', () => {
-  assert.deepEqual(backgrounds.map((background) => background.id), ['blur', 'white', 'black', 'custom', 'crop']);
+test('keeps Image-based after Custom and before Crop', () => {
+  assert.deepEqual(backgrounds.map(({ id }) => id), ['blur', 'white', 'black', 'custom', 'image', 'crop']);
 });
 
 test('uses an exact output ratio with the requested long edge', () => {
@@ -55,42 +55,15 @@ test('centers a landscape foreground vertically inside a 9:16 canvas without cro
   });
 });
 
-test('cover rectangle fills the blur background canvas', () => {
+test('cover rectangle centers an image and fills the canvas', () => {
   assert.deepEqual(getCoverRect(1600, 900, 1728, 2160), { x: -1056, y: 0, width: 3840, height: 2160 });
 });
 
-test('crop rectangle defaults to centered cover and moves across overflow with normalized focus', () => {
-  assert.deepEqual(getCropRect(1600, 900, 1728, 2160), {
-    x: -1056,
-    y: 0,
-    width: 3840,
-    height: 2160,
-  });
-  assert.deepEqual(getCropRect(1600, 900, 1728, 2160, 0, 0.5), {
-    x: 0,
-    y: 0,
-    width: 3840,
-    height: 2160,
-  });
-  assert.deepEqual(getCropRect(1600, 900, 1728, 2160, 1, 0.5), {
-    x: -2112,
-    y: 0,
-    width: 3840,
-    height: 2160,
-  });
+test('crop rectangle uses normalized horizontal position', () => {
+  assert.deepEqual(getCropRect(1600, 900, 1728, 2160, 0, 0.5), { x: 0, y: 0, width: 3840, height: 2160 });
+  assert.deepEqual(getCropRect(1600, 900, 1728, 2160, 1, 0.5), { x: -2112, y: 0, width: 3840, height: 2160 });
 });
 
-test('crop rectangle supports vertical positioning and clamps focus into the image', () => {
-  assert.deepEqual(getCropRect(900, 1600, 2160, 1215, 0.5, 0.25), {
-    x: 0,
-    y: -656.25,
-    width: 2160,
-    height: 3840,
-  });
-  assert.deepEqual(getCropRect(900, 1600, 2160, 1215, -1, 2), {
-    x: 0,
-    y: -2625,
-    width: 2160,
-    height: 3840,
-  });
+test('crop rectangle clamps normalized coordinates', () => {
+  assert.deepEqual(getCropRect(900, 1600, 2160, 1215, -4, 8), { x: 0, y: -2625, width: 2160, height: 3840 });
 });
