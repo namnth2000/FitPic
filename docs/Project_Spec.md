@@ -3,21 +3,41 @@
 # 1. Tổng quan
 
 - **Tên sản phẩm:** FitPic
-- **Mô tả ngắn:** Công cụ web giúp người dùng đưa một hoặc nhiều ảnh về đúng tỉ lệ phù hợp với nơi muốn đăng trên mạng xã hội, giữ trọn nội dung bằng các background khác nhau hoặc crop đúng vùng mong muốn.
-- **Người dùng mục tiêu:** Người dùng mạng xã hội, người bán hàng online và người sáng tạo nội dung cần chuẩn bị ảnh nhanh cho Facebook, Instagram, TikTok và YouTube.
-- **Luồng chính:** **Upload ảnh -> Chọn tỉ lệ -> Chọn background / Crop -> Preview -> Save / Download**.
-- **Nguyên tắc:** Xử lý toàn bộ ảnh trên thiết bị, không backend, không upload ảnh của người dùng lên server.
+- **Mô tả ngắn:** Công cụ web giúp người dùng đưa một hoặc nhiều ảnh về đúng tỉ lệ phù hợp với nơi muốn đăng trên mạng xã hội. Người dùng có thể giữ trọn ảnh với background blur, màu hoặc một ảnh nền riêng, hoặc chọn Crop để phủ kín khung và chọn vùng giữ lại.
+- **Vấn đề:** Một ảnh có thể phù hợp với nội dung nhưng không phù hợp với tỉ lệ hiển thị của Facebook, Instagram, TikTok hoặc YouTube. Có lúc người dùng muốn giữ trọn nội dung bằng background; có lúc họ muốn dùng một ảnh khác làm background; có lúc họ muốn ảnh phủ kín khung và chủ động chọn vùng bị crop. Khi có nhiều ảnh cùng cần một định dạng, lặp lại quy trình từng ảnh cũng gây tốn thời gian.
+- **Người dùng mục tiêu:** Người dùng mạng xã hội, người bán hàng online và người sáng tạo nội dung cần chuẩn bị ảnh nhanh để đăng lên các nền tảng phổ biến.
+- **Giải pháp chính:** Người dùng tải một hoặc nhiều ảnh lên, chọn placement / tỉ lệ và cách lấp khung. FitPic preview từng ảnh trong batch. Với các background thông thường FitPic giữ trọn ảnh; Image-based dùng một ảnh riêng làm background cho toàn bộ batch; với Crop, ảnh phủ kín canvas và người dùng kéo để điều chỉnh vùng giữ lại cho từng ảnh.
+- **Mục tiêu của phiên bản này:** Giữ luồng đơn giản: **Upload ảnh -> Chọn tỉ lệ / placement -> Chọn background hoặc Crop -> Xem từng preview -> Save / Download**.
 
 # 2. Phạm vi sản phẩm
 
-## 2.1 Upload ảnh nguồn
+## Luồng sử dụng chính
 
-- Cho phép chọn một hoặc nhiều ảnh trong một lần.
+1. Người dùng mở FitPic và tải một hoặc nhiều ảnh từ thiết bị lên.
+2. FitPic đọc ảnh cục bộ và hiển thị preview của ảnh hợp lệ đầu tiên.
+3. Nếu có nhiều ảnh, người dùng dùng mũi tên Previous / Next để xem từng preview.
+4. Người dùng chọn placement / tỉ lệ bằng các tile có icon mạng xã hội và tỉ lệ hiển thị bên dưới.
+5. Người dùng chọn Blur Original, White, Black, Custom, Image-based hoặc Crop.
+6. Nếu chọn Custom, người dùng có thể chọn màu preset, dùng system color picker hoặc nhập HEX.
+7. Nếu chọn Image-based, người dùng chọn một ảnh nền riêng từ thiết bị. Ảnh nền dùng chung cho toàn bộ batch, được căn giữa và cover canvas; foreground vẫn được contain để giữ trọn nội dung.
+8. Nếu chọn Crop, ảnh tự cover toàn bộ canvas, mặc định căn giữa và có thể kéo để điều chỉnh vùng giữ lại. Crop position được lưu riêng cho từng ảnh.
+9. Cùng một tỉ lệ và fill mode áp dụng cho toàn bộ batch.
+10. FitPic tạo một JPG riêng cho từng ảnh. Trên iPhone/iPad hỗ trợ file sharing, FitPic gửi toàn bộ các file vào một native share sheet. Trên desktop hoặc browser không hỗ trợ, FitPic dùng download fallback.
+
+## Yêu cầu chức năng
+
+### 1. Upload ảnh
+
+- Người dùng có thể chọn một hoặc nhiều ảnh từ thiết bị trong cùng một lần chọn file.
 - Hỗ trợ JPG, PNG, WebP và GIF.
-- Bỏ qua file không hợp lệ và báo số lượng file bị bỏ qua.
-- Batch mới reset preview về ảnh đầu tiên.
+- Sau khi có ít nhất một ảnh hợp lệ, FitPic hiển thị preview và cho phép tiếp tục chỉnh định dạng.
+- Nếu một số file không hợp lệ hoặc không đọc được, FitPic bỏ qua các file đó và thông báo số lượng bị bỏ qua.
+- Nếu không có file hợp lệ nào, FitPic phải thông báo lỗi rõ ràng và không thay thế batch đang dùng bằng dữ liệu hỏng.
+- Batch mới reset preview về ảnh đầu tiên và reset crop position của mọi ảnh về center.
 
-## 2.2 Platform / tỉ lệ
+### 2. Chọn platform / placement và tỉ lệ
+
+Người dùng không nhập kích thước pixel thủ công. FitPic cung cấp:
 
 - Instagram Feed -> `4:5`
 - Instagram Square -> `1:1`
@@ -29,119 +49,197 @@
 - YouTube 3:4 -> `3:4`
 - YouTube Shorts -> `9:16`
 
-UI selector dùng tile compact với icon mạng xã hội trong khung và ratio bên dưới.
+UI:
 
-## 2.3 Background / fill modes
+- Mỗi lựa chọn là một tile nhỏ.
+- Icon mạng xã hội nằm trong khung tile.
+- Tỉ lệ nằm ngay bên dưới tile.
+- Tên đầy đủ của placement vẫn phải có trong accessible label.
+- Không thêm editor toolbar phức tạp.
 
-Thứ tự bắt buộc:
+### 3. Giữ trọn ảnh với background
 
-1. **Blur Original**
-2. **White**
-3. **Black**
-4. **Custom**
-5. **Image-based**
-6. **Crop**
+Áp dụng cho Blur Original, White, Black, Custom và Image-based:
 
-### Blur Original
+- Ảnh gốc luôn giữ nguyên aspect ratio.
+- Ảnh foreground không bị crop.
+- Ảnh được căn giữa theo cả chiều ngang và chiều dọc.
+- Ảnh được phóng lớn tối đa cho đến khi một chiều chạm cạnh canvas.
+- Không chủ động tạo margin hoặc padding cố định ở cả bốn cạnh.
+- Phần canvas không được ảnh gốc phủ sẽ dùng background đã chọn.
+- Nếu ảnh gốc đã có cùng aspect ratio với khung đích, ảnh foreground phủ toàn bộ canvas và background không xuất hiện.
 
-- Ảnh nguồn được contain ở foreground.
-- Chính ảnh nguồn được cover + blur làm background.
-- Đây là mode mặc định.
+### 4. Fill mode
 
-### White / Black
+Có sáu lựa chọn theo đúng thứ tự:
 
-- Ảnh nguồn được contain ở foreground.
-- Phần canvas còn lại dùng nền trắng hoặc đen.
+- **Blur Original:** dùng chính ảnh gốc làm background và làm mờ. Đây là lựa chọn mặc định.
+- **White:** nền trắng.
+- **Black:** nền đen.
+- **Custom:** màu nền do người dùng chọn.
+- **Image-based:** dùng một ảnh riêng do người dùng chọn làm background.
+- **Crop:** ảnh gốc phủ kín toàn bộ canvas và phần dư nằm ngoài canvas bị crop.
 
-### Custom
+Custom:
 
-- Ảnh nguồn được contain ở foreground.
-- Background là màu do người dùng chọn.
-- Có preset palette, native color picker và ô HEX.
+- Có palette preset nhỏ với các màu phổ biến, sắp theo nhóm sáng/pastel, màu tươi và màu đậm.
+- Có system color picker.
+- Có ô nhập HEX.
+- Màu custom phải được phản ánh ngay trong preview và export.
 
-### Image-based
+Image-based:
 
-- Người dùng chọn **một ảnh nền riêng** từ thiết bị.
-- Hỗ trợ cùng các định dạng JPG, PNG, WebP và GIF.
-- Ảnh nền được xử lý hoàn toàn local.
+- Nằm sau Custom và trước Crop trong selector.
+- Người dùng chọn một ảnh nền riêng từ thiết bị.
+- Hỗ trợ JPG, PNG, WebP và GIF.
+- Ảnh nền chỉ được đọc local, không upload lên server.
 - Một ảnh nền được dùng chung cho toàn bộ batch.
-- Ảnh nền được căn giữa và dùng `cover` để phủ kín canvas đích.
-- Ảnh nguồn vẫn dùng center + contain + maximum possible size, không crop foreground.
-- Người dùng có thể thay hoặc xóa ảnh nền.
-- Khi Image-based đang được chọn nhưng chưa có ảnh nền hợp lệ, nút Save / Download phải disabled.
-- Không có opacity, blur amount, filter, reposition background hoặc per-image background trong phiên bản này.
+- Ảnh nền được căn giữa và scale theo cover để luôn phủ kín canvas đích.
+- Foreground vẫn dùng center + contain + maximum possible size, không crop foreground.
+- Người dùng có thể thay hoặc xóa ảnh nền đã chọn.
+- Khi đang chọn Image-based nhưng chưa có ảnh nền hợp lệ, Save / Download phải disabled.
+- Không có opacity, blur amount, filter, reposition ảnh nền hoặc per-image background image trong version này.
 
-### Crop
+Crop:
 
-- Ảnh nguồn dùng cover để phủ kín canvas.
-- Mặc định crop ở center `0.5 / 0.5`.
-- Người dùng kéo ảnh trực tiếp trong preview để chỉnh vùng giữ lại.
-- Crop position lưu riêng cho từng ảnh bằng normalized `cropX` / `cropY`.
-- Có `Đặt lại` để đưa ảnh hiện tại về center.
-- Không có zoom, rotate hoặc freeform crop handles.
+- Scale ảnh theo cover để canvas luôn được phủ kín.
+- Mặc định `cropX = 0.5`, `cropY = 0.5`.
+- Người dùng kéo trực tiếp ảnh trong preview bằng mouse hoặc touch.
+- Crop position dùng normalized coordinates trong `[0, 1]`, không lưu pixel preview.
+- Movement phải clamp để không lộ khoảng trống trong canvas.
+- Hiện rule-of-thirds grid nhẹ trong lúc drag.
+- Có nút `Đặt lại` để đưa ảnh hiện tại về center.
+- Không có zoom, rotation hoặc freeform crop rectangle trong version này.
 
-## 2.4 Preview batch
+### 5. Batch processing
 
-- Preview hiển thị ảnh tại `previewIndex`.
-- Với nhiều ảnh, có Previous / Next và chỉ báo `current / total`.
-- Với một ảnh, ẩn navigation.
-- ArrowLeft / ArrowRight có thể chuyển preview khi focus không nằm trong form control.
-- Ratio và background mode dùng chung cho batch.
-- Crop position là per-image.
-- Image-based background là shared cho batch.
+- Cùng một platform / tỉ lệ và fill mode áp dụng cho tất cả ảnh trong batch.
+- Image-based background image là batch-level và dùng chung cho mọi ảnh nguồn.
+- Crop position được lưu riêng cho từng ảnh vì mỗi ảnh có framing khác nhau.
+- Save / Download button hiển thị số ảnh khi batch có nhiều hơn một ảnh.
+- Mỗi ảnh được render riêng ở độ phân giải export và tạo thành một JPG riêng.
+- Trên iPhone/iPad có Web Share file support, toàn bộ JPG được truyền vào một lần `navigator.share({ files })`.
+- Nếu việc chuẩn bị file làm Safari mất transient user activation, FitPic giữ tạm các file đã render để lần tap tiếp theo có thể mở share sheet ngay.
+- Trên desktop hoặc browser không hỗ trợ chia sẻ file, FitPic giữ individual-download fallback.
+- Không tạo ZIP trong phiên bản này.
+- Không có per-image ratio, per-image background, reorder hoặc thumbnail manager.
 
-## 2.5 Save / Download
+### 6. Preview và điều hướng batch
 
-- Mỗi ảnh được render riêng thành JPG theo đúng composition preview.
-- Preview dùng long edge 960px, export dùng long edge 2160px.
-- Trên iPhone/iPad có Web Share file support, FitPic ưu tiên truyền toàn bộ JPG vào một lần `navigator.share({ files })`.
-- Nếu Safari mất transient user activation trong lúc render, có thể cache file đã chuẩn bị và yêu cầu tap lại để mở share sheet ngay.
-- Desktop và browser không hỗ trợ file sharing dùng individual-download fallback.
-- Image-based export phải sử dụng đúng ảnh nền đã chọn và cùng cover geometry với preview.
+- Preview phải thể hiện đúng composition của ảnh hiện tại, gồm aspect ratio, vị trí ảnh, background hoặc crop.
+- Batch có nút Previous và Next cùng counter `current / total`.
+- Khi chỉ có một ảnh, ẩn navigation.
+- Previous disabled ở ảnh đầu; Next disabled ở ảnh cuối.
+- `ArrowLeft` / `ArrowRight` có thể điều hướng khi focus không nằm trong form control.
+- Chuyển preview không thay đổi output settings.
+- Trong Crop, drag chỉ cập nhật crop position của ảnh đang xem.
+- Trong Image-based, mọi preview dùng cùng một ảnh nền đã chọn.
+- Preview không được làm thay đổi ảnh gốc.
+
+### 7. Save / Download
+
+- Người dùng có thể lưu hoặc tải ảnh kết quả sau khi đã upload ít nhất một ảnh hợp lệ.
+- File đầu ra phải giữ đúng aspect ratio và composition tương ứng với state của từng ảnh.
+- Với Image-based, export phải dùng đúng ảnh nền đã chọn và cùng cover geometry với preview.
+- Với Crop, export phải dùng đúng normalized crop position của từng ảnh, không dùng pixel offset của preview.
+- Với batch, FitPic tạo một file JPG cho từng ảnh.
+- Trên iPhone/iPad hỗ trợ Web Share, nút dùng wording `Lưu ảnh` / `Lưu N ảnh` và mở native share sheet.
+- FitPic không được tuyên bố đã lưu vào Photos chỉ vì share sheet đã mở.
+- Web app không tự ghi ảnh âm thầm vào Photos; hành động cuối cùng vẫn cần người dùng xác nhận trong giao diện hệ thống của iOS.
+- Trên browser không hỗ trợ file sharing, FitPic dùng download fallback.
+- Quá trình save / download không yêu cầu tài khoản, đăng nhập hoặc upload ảnh lên server.
+
+## Quy tắc sản phẩm
+
+- FitPic giải quyết việc đưa ảnh về đúng định dạng social media, không cố trở thành photo editor đầy đủ.
+- Người dùng chọn placement / tỉ lệ bằng các lựa chọn rõ ràng thay vì nhập pixel thủ công.
+- Blur Original là fill mode mặc định.
+- Các background thông thường dùng center + contain + maximum possible size cho foreground.
+- Image-based dùng một background image shared + center cover, trong khi foreground vẫn contain.
+- Crop dùng cover + normalized position, mặc định center.
+- Ratio và fill mode là batch-level; chỉ crop position là per-image.
+- Preview navigation dùng arrows + counter thay vì thumbnail manager.
+- Mobile Apple devices ưu tiên native share sheet cho image export; desktop giữ download behavior quen thuộc.
+- Ảnh nguồn và ảnh nền của người dùng chỉ được xử lý trên thiết bị và không được gửi lên hoặc lưu trên server.
+
+## Ngoài phạm vi
+
+- Zoom trong Crop.
+- Rotation.
+- Freeform crop rectangle hoặc crop handles.
+- Thay đổi thủ công kích thước foreground ngoài cơ chế contain / cover.
+- Padding hoặc margin tùy chỉnh.
+- Image editor với text, filter, sticker, watermark hoặc các công cụ chỉnh sửa khác.
+- Per-image ratio hoặc per-image background mode.
+- Per-image background image.
+- Reposition / crop / blur / opacity controls cho Image-based background.
+- Thumbnail browser, reorder hoặc quản lý asset.
+- ZIP export.
+- Tự động ghi thẳng ảnh vào iOS Photos mà không qua user action.
+- Xuất một ảnh thành nhiều social sizes cùng lúc.
+- Tài khoản người dùng.
+- Lịch sử xử lý ảnh.
+- Backend lưu trữ hoặc xử lý ảnh.
+- API trả phí.
 
 # 3. UI/UX
 
-- Single-page workbench, desktop 2 cột và mobile stack dọc.
-- Background selector giữ compact và không mở modal lớn.
-- Image-based controls chỉ xuất hiện inline khi mode đó được chọn.
-- Image-based controls gồm:
-  - Chọn / thay ảnh nền
-  - Tên file hiện tại
-  - Xóa ảnh nền
-- Preview note phản ánh `Crop`, `Image-based` hoặc `Không crop`.
-- Crop mới cho phép drag trên canvas; các background mode khác không biến preview thành editor.
-- Không thêm thumbnail manager hoặc per-image settings panel.
+- **Nền tảng và thiết bị:** Web, sử dụng được trên desktop và mobile.
+- **Khu vực chính:** Header; upload; chọn tỉ lệ / placement; chọn fill mode; custom palette hoặc Image-based picker khi cần; preview navigation; preview; crop controls khi cần; nút save / download.
+- **Bố cục:** Một luồng ngắn trên cùng một trang, không chuyển sang editor phức tạp.
+- **Khu chọn tỉ lệ:** Pattern compact kiểu CapCut - icon mạng xã hội trong khung, ratio ở dưới.
+- **Custom color:** Hiển thị inline và gọn trong panel, không dùng modal lớn.
+- **Image-based:** Hiển thị inline một file picker gọn, tên file hiện tại và action thay / xóa ảnh nền.
+- **Crop:** Kéo trực tiếp trên preview, hiện grid khi drag, có `Đặt lại`.
+- **Batch preview:** Hai mũi tên và `current / total`; ẩn khi chỉ một ảnh.
+- **Export trên iPhone/iPad:** Dùng wording `Lưu ảnh` / `Lưu N ảnh` và native share sheet.
+- **Trạng thái cần hiển thị:**
+  - Chưa có ảnh.
+  - Một ảnh.
+  - Nhiều ảnh và vị trí hiện tại trong batch.
+  - Image-based active nhưng chưa có ảnh nền.
+  - Image-based đã có ảnh nền và tên file hiện tại.
+  - Crop active và hướng dẫn kéo.
+  - Đang đọc/export ảnh.
+  - File không hợp lệ hoặc không đọc được.
+  - Safari cần tap lại để khôi phục user activation.
+- **Brand:**
+  - Logo wordmark **FitPic**.
+  - Brand color `#047857`, chỉ dùng làm màu nhấn.
+  - Minimal, calm, functional, image-first.
+  - Hỗ trợ light và dark theme.
+  - Design source of truth nằm trong `DESIGN.md`.
 
 # 4. Dữ liệu và quyền riêng tư
 
-- Ảnh nguồn và ảnh nền chỉ được đọc bằng browser local file APIs.
-- Object URL của ảnh nền phải được revoke khi thay ảnh, xóa ảnh hoặc unload trang.
-- Không gửi ảnh nguồn hoặc ảnh nền tới server.
-- Không lưu lịch sử ảnh trên backend.
-- Không yêu cầu tài khoản hoặc đăng nhập.
+- **Dữ liệu đầu vào:** Một hoặc nhiều ảnh nguồn, platform / tỉ lệ, fill mode, custom color nếu có, một ảnh nền local nếu dùng Image-based và normalized crop position cho từng ảnh nếu Crop.
+- **Dữ liệu đầu ra:** Một hoặc nhiều file JPG theo aspect ratio và composition đã chọn.
+- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend.
+- **Tích hợp bên ngoài:** Không có API hoặc dịch vụ trả phí.
+- **Quyền riêng tư:** Ảnh nguồn và ảnh nền phải được xử lý trên thiết bị, không upload hoặc gửi nội dung ảnh tới server. Object URL của ảnh nền phải được revoke khi thay, xóa hoặc unload. Không yêu cầu tài khoản hoặc đăng nhập.
 
-# 5. Ngoài phạm vi
+# 5. Tiêu chí hoàn thành
 
-- Per-image background image.
-- Reposition / crop riêng ảnh nền.
-- Background opacity / filters / blur controls.
-- Zoom hoặc rotate trong Crop.
-- Text, sticker, watermark hoặc editor timeline.
-- ZIP export.
-- Backend image processing hoặc storage.
-- Account / history.
-
-# 6. Tiêu chí hoàn thành
-
+- [ ] Người dùng có thể upload một hoặc nhiều ảnh hợp lệ.
+- [ ] Previous / Next cho phép xem từng ảnh trong batch.
+- [ ] Có counter `current / total` và navigation ẩn khi chỉ có một ảnh.
+- [ ] Có các placement / ratio hiện có và mapping vẫn đúng.
+- [ ] Blur Original, White, Black và Custom vẫn giữ trọn foreground như trước.
 - [ ] Image-based xuất hiện sau Custom và trước Crop.
-- [ ] Chọn Image-based hiển thị local image picker inline.
-- [ ] Có thể chọn, thay và xóa ảnh nền.
-- [ ] Ảnh nền center + cover canvas đích.
-- [ ] Foreground giữ center + contain và không crop trong Image-based.
-- [ ] Một ảnh nền áp dụng cho toàn bộ batch.
-- [ ] Preview Previous / Next vẫn hoạt động với Image-based.
-- [ ] Save / Download disabled khi Image-based chưa có ảnh nền.
-- [ ] Export từng ảnh dùng đúng ảnh nền và đúng ratio.
-- [ ] iPhone/iPad native share flow không bị phá vỡ.
-- [ ] Crop per-image và preview navigation hiện tại không bị regress.
-- [ ] Ảnh nguồn và ảnh nền vẫn được xử lý hoàn toàn local.
+- [ ] Image-based cho phép chọn, thay và xóa một ảnh nền local.
+- [ ] Image-based background dùng center + cover; foreground vẫn center + contain.
+- [ ] Một ảnh nền Image-based áp dụng cho toàn bộ batch.
+- [ ] Save / Download disabled khi Image-based chưa có ảnh nền hợp lệ.
+- [ ] Export Image-based dùng đúng ảnh nền đã chọn ở 2160px.
+- [ ] Có option Crop.
+- [ ] Crop mặc định center.
+- [ ] Có thể drag Crop bằng mouse và touch.
+- [ ] Crop được clamp, không lộ khoảng trống.
+- [ ] Grid hiển thị trong lúc kéo.
+- [ ] `Đặt lại` đưa crop của ảnh hiện tại về center.
+- [ ] Crop position được lưu riêng cho từng ảnh.
+- [ ] Export dùng đúng crop position của từng ảnh ở 2160px.
+- [ ] Batch share trên iPhone/iPad vẫn dùng native share flow khi được hỗ trợ.
+- [ ] Desktop / unsupported browser vẫn dùng download fallback.
+- [ ] Ảnh nguồn và ảnh nền vẫn được xử lý hoàn toàn client-side.
+- [ ] Không thêm zoom, rotation, background editor, thumbnail manager, ZIP hoặc full image-editor features.
