@@ -152,8 +152,10 @@
   opacity: .55;
 }
 
+.layout-toggle-row:has(input:disabled),
 .layout-panel.is-disabled .layout-toggle-row {
   cursor: not-allowed;
+  opacity: .6;
 }
 
 .layout-panel.is-disabled .layout-label-copy,
