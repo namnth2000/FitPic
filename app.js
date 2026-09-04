@@ -33,7 +33,7 @@
   const previewCounter = document.querySelector('#preview-counter');
   const themeToggle = document.querySelector('#theme-toggle');
 
-  const defaultCustomColor = '#7C3AED';
+  const defaultCustomColor = '#FFF8E7';
   const paletteColors = [
     { name: 'Ivory', value: '#FFF8E7' },
     { name: 'Sand', value: '#EAD8C0' },
