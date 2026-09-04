@@ -5,6 +5,7 @@
     getPlatform,
     getCanvasSize,
     getContainRect,
+    getInsetRect,
     getCoverRect,
     getCropRect,
   } = window.FitPicCore;
@@ -28,6 +29,16 @@
   const imageBackgroundAction = document.querySelector('#image-background-action');
   const imageBackgroundName = document.querySelector('#image-background-name');
   const clearImageBackgroundButton = document.querySelector('#clear-image-background');
+  const layoutControls = document.querySelector('#layout-controls');
+  const layoutModeNote = document.querySelector('#layout-mode-note');
+  const balanceToggle = document.querySelector('#balance-toggle');
+  const balanceDetails = document.querySelector('#balance-details');
+  const balanceSlider = document.querySelector('#balance-slider');
+  const balanceValue = document.querySelector('#balance-value');
+  const radiusToggle = document.querySelector('#radius-toggle');
+  const radiusDetails = document.querySelector('#radius-details');
+  const radiusSlider = document.querySelector('#radius-slider');
+  const radiusValue = document.querySelector('#radius-value');
   const cropControls = document.querySelector('#crop-controls');
   const resetCropButton = document.querySelector('#reset-crop');
   const previewFrame = document.querySelector('.preview-frame');
@@ -73,12 +84,17 @@
     backgroundId: 'blur',
     customColor: defaultCustomColor,
     backgroundImage: null,
+    balanceEnabled: false,
+    balancePadding: 0.08,
+    radiusEnabled: false,
+    radiusPx: 12,
     pendingShareFiles: null,
     cropDrag: null,
   };
 
   const previewLongEdge = 960;
   const exportLongEdge = 2160;
+  const radiusReferenceWidth = 360;
   const supportedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
   function clampUnit(value) {
@@ -229,12 +245,33 @@
     clearImageBackgroundButton.hidden = !background;
   }
 
+  function syncLayoutControls() {
+    const available = state.backgroundId !== 'crop' && Boolean(activeImageEntry());
+    layoutControls.classList.toggle('is-disabled', !available);
+    layoutModeNote.hidden = state.backgroundId !== 'crop';
+
+    balanceToggle.checked = state.balanceEnabled;
+    balanceToggle.disabled = !available;
+    balanceDetails.hidden = !state.balanceEnabled;
+    balanceSlider.disabled = !available || !state.balanceEnabled;
+    balanceSlider.value = String(Math.round(state.balancePadding * 100));
+    balanceValue.textContent = `${Math.round(state.balancePadding * 100)}%`;
+
+    radiusToggle.checked = state.radiusEnabled;
+    radiusToggle.disabled = !available || !state.balanceEnabled;
+    radiusDetails.hidden = !state.balanceEnabled || !state.radiusEnabled;
+    radiusSlider.disabled = !available || !state.balanceEnabled || !state.radiusEnabled;
+    radiusSlider.value = String(state.radiusPx);
+    radiusValue.textContent = `${state.radiusPx}px`;
+  }
+
   function syncEditorControls() {
     customColorControls.hidden = state.backgroundId !== 'custom';
     customColorInput.value = state.customColor;
     customColorHex.value = state.customColor;
     customColorHex.classList.remove('is-invalid');
     syncImageBackgroundControls();
+    syncLayoutControls();
 
     const isCrop = state.backgroundId === 'crop' && Boolean(activeImageEntry());
     cropControls.hidden = !isCrop;
@@ -293,6 +330,46 @@
     context.drawImage(background, cover.x, cover.y, cover.width, cover.height);
   }
 
+  function roundedRectPath(context, x, y, width, height, radius) {
+    const safeRadius = Math.min(Math.max(0, radius), width / 2, height / 2);
+    context.beginPath();
+    context.moveTo(x + safeRadius, y);
+    context.lineTo(x + width - safeRadius, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+    context.lineTo(x + width, y + height - safeRadius);
+    context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+    context.lineTo(x + safeRadius, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+    context.lineTo(x, y + safeRadius);
+    context.quadraticCurveTo(x, y, x + safeRadius, y);
+    context.closePath();
+  }
+
+  function drawForeground(context, image, width, height) {
+    const frame = state.balanceEnabled
+      ? getInsetRect(width, height, state.balancePadding)
+      : { x: 0, y: 0, width, height };
+    const contained = getContainRect(image.naturalWidth, image.naturalHeight, frame.width, frame.height);
+    const foreground = {
+      x: frame.x + contained.x,
+      y: frame.y + contained.y,
+      width: contained.width,
+      height: contained.height,
+    };
+
+    if (state.balanceEnabled && state.radiusEnabled && state.radiusPx > 0) {
+      const radius = state.radiusPx * (width / radiusReferenceWidth);
+      context.save();
+      roundedRectPath(context, foreground.x, foreground.y, foreground.width, foreground.height, radius);
+      context.clip();
+      context.drawImage(image, foreground.x, foreground.y, foreground.width, foreground.height);
+      context.restore();
+      return;
+    }
+
+    context.drawImage(image, foreground.x, foreground.y, foreground.width, foreground.height);
+  }
+
   function drawComposition(canvas, longEdge, entry) {
     if (!entry?.image) return;
     const image = entry.image;
@@ -346,8 +423,7 @@
       context.fillRect(0, 0, width, height);
     }
 
-    const foreground = getContainRect(image.naturalWidth, image.naturalHeight, width, height);
-    context.drawImage(image, foreground.x, foreground.y, foreground.width, foreground.height);
+    drawForeground(context, image, width, height);
   }
 
   function renderPreview() {
@@ -510,7 +586,7 @@
     renderPreview();
 
     if (state.backgroundId === 'crop') {
-      setStatus('Crop phủ kín khung. Kéo ảnh trong preview để chọn vùng giữ lại.');
+      setStatus('Crop phủ kín khung. Balance và Radius tạm không áp dụng.');
     } else if (state.backgroundId === 'custom') {
       setStatus(`Đang dùng nền ${state.customColor}.`);
     } else if (state.backgroundId === 'image') {
@@ -549,6 +625,41 @@
     const valid = setCustomColor(customColorHex.value);
     customColorHex.classList.toggle('is-invalid', !valid);
     if (!valid) customColorHex.value = state.customColor;
+  }
+
+  function toggleBalance() {
+    if (state.backgroundId === 'crop') return;
+    state.balanceEnabled = balanceToggle.checked;
+    if (!state.balanceEnabled) state.radiusEnabled = false;
+    invalidatePendingShare();
+    renderPreview();
+    setStatus(state.balanceEnabled
+      ? `Balance đang bật với lề ${Math.round(state.balancePadding * 100)}%.`
+      : 'Balance đã tắt.');
+  }
+
+  function changeBalancePadding() {
+    state.balancePadding = Number(balanceSlider.value) / 100;
+    invalidatePendingShare();
+    renderPreview();
+    setStatus(`Lề Balance: ${balanceSlider.value}%.`);
+  }
+
+  function toggleRadius() {
+    if (state.backgroundId === 'crop' || !state.balanceEnabled) return;
+    state.radiusEnabled = radiusToggle.checked;
+    invalidatePendingShare();
+    renderPreview();
+    setStatus(state.radiusEnabled
+      ? `Radius đang bật ở ${state.radiusPx}px.`
+      : 'Radius đã tắt.');
+  }
+
+  function changeRadius() {
+    state.radiusPx = Number(radiusSlider.value);
+    invalidatePendingShare();
+    renderPreview();
+    setStatus(`Radius: ${state.radiusPx}px.`);
   }
 
   function goToPreview(index) {
@@ -816,6 +927,10 @@
   });
   imageBackgroundInput.addEventListener('change', onImageBackgroundUpload);
   clearImageBackgroundButton.addEventListener('click', clearImageBackground);
+  balanceToggle.addEventListener('change', toggleBalance);
+  balanceSlider.addEventListener('input', changeBalancePadding);
+  radiusToggle.addEventListener('change', toggleRadius);
+  radiusSlider.addEventListener('input', changeRadius);
   previousPreviewButton.addEventListener('click', previousPreview);
   nextPreviewButton.addEventListener('click', nextPreview);
   resetCropButton.addEventListener('click', resetCrop);
