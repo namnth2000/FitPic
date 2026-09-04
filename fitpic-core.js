@@ -22,6 +22,7 @@
     { id: 'white', name: 'White' },
     { id: 'black', name: 'Black' },
     { id: 'custom', name: 'Custom' },
+    { id: 'crop', name: 'Crop' },
   ];
 
   function getPlatform(id) {
@@ -48,17 +49,39 @@
     };
   }
 
-  function getCoverRect(sourceWidth, sourceHeight, canvasWidth, canvasHeight) {
+  function clampUnit(value) {
+    if (!Number.isFinite(value)) return 0.5;
+    return Math.min(1, Math.max(0, value));
+  }
+
+  function getCropRect(sourceWidth, sourceHeight, canvasWidth, canvasHeight, cropX = 0.5, cropY = 0.5) {
     const scale = Math.max(canvasWidth / sourceWidth, canvasHeight / sourceHeight);
     const width = sourceWidth * scale;
     const height = sourceHeight * scale;
+    const overflowX = Math.max(0, width - canvasWidth);
+    const overflowY = Math.max(0, height - canvasHeight);
+    const x = overflowX ? -overflowX * clampUnit(cropX) : 0;
+    const y = overflowY ? -overflowY * clampUnit(cropY) : 0;
+
     return {
-      x: (canvasWidth - width) / 2,
-      y: (canvasHeight - height) / 2,
+      x: x === 0 ? 0 : x,
+      y: y === 0 ? 0 : y,
       width,
       height,
     };
   }
 
-  return { platforms, backgrounds, getPlatform, getCanvasSize, getContainRect, getCoverRect };
+  function getCoverRect(sourceWidth, sourceHeight, canvasWidth, canvasHeight) {
+    return getCropRect(sourceWidth, sourceHeight, canvasWidth, canvasHeight, 0.5, 0.5);
+  }
+
+  return {
+    platforms,
+    backgrounds,
+    getPlatform,
+    getCanvasSize,
+    getContainRect,
+    getCoverRect,
+    getCropRect,
+  };
 });

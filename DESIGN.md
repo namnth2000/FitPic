@@ -14,9 +14,9 @@ Readable
 
 The UI should make this loop obvious without adding editor chrome:
 
-`Upload -> Ratio -> Background -> Preview -> Download`
+`Upload -> Ratio -> Fill mode -> Preview -> Save / Download`
 
-For multiple images, the same controls apply to the whole batch and the preview stays focused on the first image.
+For multiple images, ratio and fill mode apply to the whole batch. The user can move through individual previews, and Crop position can be adjusted per image.
 
 ## Visual system
 
@@ -76,14 +76,17 @@ The ratio selector follows the compact CapCut-like pattern requested for FitPic:
 
 Supported visual groups include Instagram, TikTok, Facebook and YouTube.
 
-### Background selector
+### Fill mode selector
 
-Keep the four choices together:
+Keep these five choices together:
 
 - Blur Original
 - White
 - Black
 - Custom
+- Crop
+
+Blur, White, Black and Custom preserve the full foreground image. Crop is intentionally different: it fills the whole selected ratio and allows repositioning the covered image.
 
 When Custom is selected, reveal the palette inline below the choices. Do not open a large modal.
 
@@ -95,15 +98,30 @@ The custom palette contains 24 commonly useful colors arranged as three visually
 
 Keep the native color input and HEX input available for colors outside the preset palette.
 
-### Batch behavior
+### Crop interaction
+
+Crop should feel like the simple Facebook-style crop reference, not a full editor:
+
+- Start centered horizontally and vertically
+- Scale the image only enough to cover the selected output ratio
+- Drag directly on the preview with mouse or touch to choose the kept region
+- Clamp movement so empty canvas can never be exposed
+- Show a subtle rule-of-thirds grid while dragging
+- Show `Đặt lại` while Crop is active
+- Reset returns the current image to centered `0.5 / 0.5`
+- Do not add zoom, rotation, crop handles or numeric position controls in this version
+
+### Batch preview
 
 Batch processing should not turn the page into an asset manager.
 
 - User can select multiple files in the existing upload control
-- Preview the first valid image only
-- Clearly state that ratio/background apply to all selected images
-- Download button shows the batch count
-- Do not add thumbnails, reordering, per-image settings or ZIP UI in this pass
+- Previous / Next arrow buttons move through previews
+- Show a compact `current / total` counter
+- Hide navigation when there is only one image
+- Ratio and fill mode apply to all images
+- Crop position is stored per image because different photos need different framing
+- Do not add thumbnails, reordering, per-image ratio/background controls or ZIP UI
 
 ## Interaction
 
@@ -113,14 +131,16 @@ Batch processing should not turn the page into an asset manager.
 - Mobile touch targets should be comfortably tappable
 - Disabled states stay readable
 - Theme switching preserves the current light/dark behavior
+- `ArrowLeft` / `ArrowRight` can navigate a batch when focus is not inside an interactive form control
 
 ## Responsive
 
 - Desktop keeps the two-column workbench
 - At narrow widths, controls and preview stack vertically
 - Ratio tiles use 5 columns on desktop and 4 on small mobile screens
-- Background choices use 2 columns on small mobile screens
+- Fill mode choices use 2 columns on small mobile screens
 - Custom palette compresses from 8 to 6 columns on small screens
+- Preview navigation stays compact and touchable
 - Simplify layout before shrinking text or touch targets
 
 ## Do
@@ -130,11 +150,13 @@ Batch processing should not turn the page into an asset manager.
 - Reuse current spacing, borders and emerald accent
 - Keep controls compact and obvious
 - Maintain both light and dark themes
+- Keep Crop limited to repositioning a cover image
 
 ## Do not
 
-- Add crop, drag-to-position, filters, stickers, text tools or editor timelines
+- Turn Crop into a full photo editor
+- Add zoom, freeform crop rectangles, filters, stickers, text tools or editor timelines
 - Add a backend or upload user images to a server
 - Add large section headings only to explain obvious controls
-- Copy the full CapCut editor or full StyleSpec color dialog
+- Copy the full Facebook or CapCut editor
 - Add dependencies for visual polish that plain HTML/CSS/JS already handles

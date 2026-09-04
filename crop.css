@@ -1,0 +1,189 @@
+/* Crop mode and batch preview navigation. Kept separate so the existing FitPic visual system remains unchanged. */
+
+.preview-heading {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview-navigation {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-navigation[hidden] {
+  display: none;
+}
+
+.preview-nav-button,
+.reset-crop-button {
+  border: 1px solid var(--line);
+  color: var(--choice-text);
+  background: var(--control);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background-color .15s, transform .1s;
+}
+
+.preview-nav-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.preview-nav-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.preview-nav-button:disabled,
+.reset-crop-button:disabled {
+  color: var(--disabled-text);
+  background: var(--disabled);
+  cursor: not-allowed;
+  opacity: .72;
+}
+
+.preview-counter {
+  min-width: 42px;
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.background-options .choice-button {
+  flex-basis: 84px;
+}
+
+.background-sample--crop {
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, currentColor 0 2px, transparent 2px calc(100% - 2px), currentColor calc(100% - 2px)),
+    linear-gradient(currentColor 0 2px, transparent 2px calc(100% - 2px), currentColor calc(100% - 2px));
+  color: var(--choice-text);
+}
+
+.preview-frame.is-crop-mode #preview-canvas {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.preview-frame.is-crop-mode.is-dragging #preview-canvas {
+  cursor: grabbing;
+}
+
+.crop-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(to right,
+      transparent 33.1%,
+      rgba(255, 255, 255, .72) 33.25%,
+      rgba(255, 255, 255, .72) 33.45%,
+      transparent 33.6%,
+      transparent 66.4%,
+      rgba(255, 255, 255, .72) 66.55%,
+      rgba(255, 255, 255, .72) 66.75%,
+      transparent 66.9%),
+    linear-gradient(to bottom,
+      transparent 33.1%,
+      rgba(255, 255, 255, .72) 33.25%,
+      rgba(255, 255, 255, .72) 33.45%,
+      transparent 33.6%,
+      transparent 66.4%,
+      rgba(255, 255, 255, .72) 66.55%,
+      rgba(255, 255, 255, .72) 66.75%,
+      transparent 66.9%);
+  transition: opacity .12s ease;
+}
+
+.preview-frame.is-crop-mode.is-dragging .crop-grid {
+  opacity: 1;
+}
+
+.crop-controls {
+  margin: -6px 0 18px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.crop-controls[hidden] {
+  display: none;
+}
+
+.crop-hint {
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.reset-crop-button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 9px;
+  flex: 0 0 auto;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.preview-nav-button:focus-visible,
+.reset-crop-button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.preview-nav-button:active:not(:disabled),
+.reset-crop-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .preview-nav-button:hover:not(:disabled),
+  .reset-crop-button:hover:not(:disabled) {
+    border-color: var(--line-strong);
+    background: var(--upload-hover);
+  }
+}
+
+@media (max-width: 540px) {
+  .preview-heading {
+    min-height: 32px;
+  }
+
+  .preview-nav-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .crop-controls {
+    margin-top: -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-nav-button,
+  .reset-crop-button,
+  .crop-grid {
+    transition-duration: .01ms;
+  }
+}
