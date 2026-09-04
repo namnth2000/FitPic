@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="Chuẩn bị ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube mà không crop hay làm mất nội dung." />
+    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube mà không crop hay làm mất nội dung." />
   <meta name="application-name" content="FitPic" />
   <meta name="apple-mobile-web-app-title" content="FitPic" />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
@@ -15,11 +15,11 @@
   <meta property="og:locale" content="vi_VN" />
   <meta property="og:site_name" content="FitPic" />
   <meta property="og:title" content="FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop" />
-  <meta property="og:description" content="Đưa ảnh về đúng tỉ lệ cho mạng xã hội mà vẫn giữ trọn nội dung." />
+  <meta property="og:description" content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội mà vẫn giữ trọn nội dung." />
   <meta property="og:url" content="https://fitpic.namnth.com/" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop" />
-  <meta name="twitter:description" content="Đưa ảnh về đúng tỉ lệ cho mạng xã hội mà vẫn giữ trọn nội dung." />
+  <meta name="twitter:description" content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội mà vẫn giữ trọn nội dung." />
   <title>FitPic - Chỉnh sửa kích thước ảnh mạng xã hội không crop</title>
   <link rel="canonical" href="https://fitpic.namnth.com/" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -34,7 +34,7 @@
       "@id": "https://fitpic.namnth.com/#webapp",
       "name": "FitPic",
       "url": "https://fitpic.namnth.com/",
-      "description": "Công cụ web định dạng ảnh cho mạng xã hội mà không crop hoặc làm mất nội dung.",
+      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội mà không crop hoặc làm mất nội dung.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
       "inLanguage": "vi",
@@ -42,6 +42,8 @@
       "featureList": [
         "Định dạng ảnh cho Instagram, TikTok, Facebook và YouTube",
         "Giữ nguyên toàn bộ nội dung ảnh, không crop",
+        "Resize nhiều ảnh cùng lúc với cùng thiết lập",
+        "Nền blur, trắng, đen hoặc màu tùy chỉnh",
         "Xử lý ảnh trực tiếp trong trình duyệt"
       ]
     }
@@ -68,7 +70,7 @@
   </header>
   <main>
     <section class="product-description" aria-label="Giới thiệu FitPic">
-      <p>Chọn nền tảng bạn muốn đăng, FitPic sẽ đặt ảnh vào đúng tỉ lệ mà không cắt mất nội dung nào.</p>
+      <p>Chọn một hoặc nhiều ảnh, tỉ lệ muốn đăng và nền. FitPic giữ trọn nội dung rồi xuất tất cả ảnh ngay trên thiết bị.</p>
     </section>
 
     <section class="workspace" aria-label="Tạo ảnh social media">
@@ -77,30 +79,41 @@
           <label id="upload-label" class="upload-dropzone" for="image-upload">
             <span class="upload-icon" aria-hidden="true">↑</span>
             <span class="upload-title">Tải ảnh từ thiết bị</span>
-            <span class="upload-copy">JPG, PNG, WebP hoặc GIF</span>
+            <span class="upload-copy">JPG, PNG, WebP hoặc GIF · có thể chọn nhiều ảnh</span>
             <span class="upload-action">Chọn ảnh</span>
           </label>
-          <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+          <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple />
           <p id="file-name" class="file-name">Ảnh được xử lý ngay trên thiết bị của bạn, không gửi ra ngoài.</p>
           <p id="error-message" class="message error" role="alert" hidden></p>
         </section>
 
         <div id="editor" hidden>
-          <section class="panel" aria-label="Chọn nơi đăng">
-            <div class="panel-heading">
-              <span id="selected-ratio" class="ratio-badge">4:5</span>
-            </div>
-            <div id="platform-options" class="choice-grid" aria-label="Nơi đăng ảnh"></div>
+          <section class="panel" aria-label="Chọn tỉ lệ và nền tảng">
+            <div id="platform-options" class="platform-choice-grid" aria-label="Tỉ lệ ảnh"></div>
           </section>
           <section class="panel" aria-label="Chọn nền">
             <div id="background-options" class="background-options" aria-label="Kiểu nền"></div>
+            <div id="custom-color-controls" class="custom-color-controls" hidden>
+              <div id="custom-color-palette" class="custom-color-palette" aria-label="Bảng màu tùy chỉnh"></div>
+              <div class="custom-color-row">
+                <label class="native-color-field" for="custom-color-input">
+                  <span>Màu</span>
+                  <input id="custom-color-input" type="color" value="#7C3AED" aria-label="Chọn màu nền" />
+                </label>
+                <label class="hex-field" for="custom-color-hex">
+                  <span>HEX</span>
+                  <input id="custom-color-hex" type="text" inputmode="text" maxlength="7" value="#7C3AED"
+                    autocomplete="off" spellcheck="false" aria-label="Mã màu HEX" />
+                </label>
+              </div>
+            </div>
           </section>
         </div>
       </div>
 
       <section class="preview-column" aria-label="Ảnh xem trước">
         <div class="preview-heading">
-          <span class="device-note">Không crop</span>
+          <span id="preview-note" class="device-note">Không crop</span>
         </div>
         <div class="preview-stage">
           <div class="preview-frame">
