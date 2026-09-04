@@ -13,7 +13,7 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 # Commands
 
 - `npm run check`: kiểm tra cú pháp JavaScript của app client-side.
-- `npm test`: chạy unit test cho mapping platform, background order, output ratio và geometry contain/cover/crop.
+- `npm test`: chạy unit test cho mapping platform, background order, output ratio và geometry contain/inset/cover/crop.
 - `npm run build`: validation syntax cho static deployment, không có bundling.
 - Deploy toàn bộ repository root lên Cloudflare Pages.
 
@@ -24,11 +24,14 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Supported ratios and fill/background modes are centralized in `fitpic-core.js`.
 - Blur Original is the default background.
 - Custom background uses the curated palette plus native color and HEX input.
-- Image-based sits after Custom and before Crop. It uses one locally selected background image shared across the batch. The background uses centered cover; foreground images keep center + contain + maximum possible size.
+- Image-based sits after Custom and before Crop. It uses one locally selected background image shared across the batch. The background uses centered cover; foreground images use contain.
 - Image-based must not upload the background image anywhere. Revoke its object URL when replaced or when the page unloads.
 - Export is disabled while Image-based is selected without a valid background image.
+- Balance is a batch-level layout control for Blur, White, Black, Custom and Image-based only. It creates equal padding on all four sides using a percentage of the canvas short edge. Default when enabled is 8%, adjustable from 0% to 20%.
+- Radius is a batch-level layout control for the foreground image only. It is available only while Balance is enabled, defaults to 12px and is adjustable from 0px to 32px. Radius scales consistently between the 960px preview render and 2160px export.
+- Crop keeps its existing behavior and ignores Balance and Radius. Do not change crop geometry, drag behavior or per-image crop state for layout-control work.
 - Crop fills the canvas with the source image, starts centered and stores normalized `cropX` / `cropY` separately per source image.
-- Multiple uploaded images share the same selected ratio and fill/background mode. Preview navigation can inspect each image; Crop position remains per-image.
+- Multiple uploaded images share the same selected ratio, fill/background mode, Balance and Radius settings. Preview navigation can inspect each image; Crop position remains per-image.
 - On iPhone/iPad, prefer the Web Share API with generated JPG `File` objects so one native share sheet receives the full batch.
 - Desktop and browsers without file sharing keep the individual-download fallback.
 - If Safari loses user activation while export files are being prepared, cache prepared files so the next tap can open `navigator.share()` immediately.
