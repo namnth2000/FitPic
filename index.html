@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung, dùng ảnh nền riêng hoặc crop đúng vùng bạn muốn." />
+    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung, dùng ảnh nền riêng, thêm lề cân đối hoặc crop đúng vùng bạn muốn." />
   <meta name="application-name" content="FitPic" />
   <meta name="apple-mobile-web-app-title" content="FitPic" />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
@@ -16,12 +16,12 @@
   <meta property="og:site_name" content="FitPic" />
   <meta property="og:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
   <meta property="og:description"
-    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng hoặc crop đúng vùng bạn muốn." />
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng, Balance hoặc crop đúng vùng bạn muốn." />
   <meta property="og:url" content="https://fitpic.namnth.com/" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
   <meta name="twitter:description"
-    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng hoặc crop đúng vùng bạn muốn." />
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng, Balance hoặc crop đúng vùng bạn muốn." />
   <title>FitPic - Chỉnh kích thước ảnh mạng xã hội</title>
   <link rel="canonical" href="https://fitpic.namnth.com/" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="crop.css" />
   <link rel="stylesheet" href="image-background.css" />
+  <link rel="stylesheet" href="layout.css" />
   <script src="fitpic-core.js" defer></script>
   <script src="app.js" defer></script>
   <script type="application/ld+json">
@@ -38,7 +39,7 @@
       "@id": "https://fitpic.namnth.com/#webapp",
       "name": "FitPic",
       "url": "https://fitpic.namnth.com/",
-      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội, hỗ trợ nền blur, màu, ảnh riêng và crop theo vị trí người dùng chọn.",
+      "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội, hỗ trợ nền blur, màu, ảnh riêng, lề Balance, bo góc Radius và crop theo vị trí người dùng chọn.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
       "inLanguage": "vi",
@@ -47,6 +48,7 @@
         "Định dạng ảnh cho Instagram, TikTok, Facebook và YouTube",
         "Giữ nguyên toàn bộ nội dung ảnh với nền blur hoặc màu",
         "Dùng một ảnh riêng làm background cho toàn bộ batch",
+        "Tạo lề đều bốn phía với Balance và bo góc ảnh với Radius",
         "Crop phủ kín khung và kéo để chọn vùng giữ lại",
         "Resize nhiều ảnh cùng lúc với cùng thiết lập",
         "Xem trước từng ảnh trong batch bằng previous / next",
@@ -124,6 +126,49 @@
                 </label>
                 <input id="image-background-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
                 <button id="clear-image-background" class="image-background-clear" type="button" hidden>Xóa</button>
+              </div>
+            </div>
+          </section>
+
+          <section id="layout-controls" class="panel layout-panel" aria-label="Bố cục ảnh">
+            <div class="layout-heading">
+              <span class="layout-title">Layout</span>
+              <span id="layout-mode-note" class="layout-mode-note" hidden>Không áp dụng cho Crop</span>
+            </div>
+
+            <div class="layout-control">
+              <label class="layout-toggle-row" for="balance-toggle">
+                <span class="layout-label-copy">
+                  <strong>Balance</strong>
+                  <span>Lề đều bốn phía</span>
+                </span>
+                <span class="layout-switch">
+                  <input id="balance-toggle" type="checkbox" />
+                  <span class="layout-switch-track"></span>
+                </span>
+              </label>
+              <div id="balance-details" class="layout-slider-row" hidden>
+                <label for="balance-slider">Padding</label>
+                <input id="balance-slider" type="range" min="0" max="20" step="1" value="8" />
+                <output id="balance-value" for="balance-slider">8%</output>
+              </div>
+            </div>
+
+            <div class="layout-control">
+              <label class="layout-toggle-row" for="radius-toggle">
+                <span class="layout-label-copy">
+                  <strong>Radius</strong>
+                  <span>Bo góc ảnh bên trong</span>
+                </span>
+                <span class="layout-switch">
+                  <input id="radius-toggle" type="checkbox" disabled />
+                  <span class="layout-switch-track"></span>
+                </span>
+              </label>
+              <div id="radius-details" class="layout-slider-row" hidden>
+                <label for="radius-slider">Corner</label>
+                <input id="radius-slider" type="range" min="0" max="32" step="2" value="12" />
+                <output id="radius-value" for="radius-slider">12px</output>
               </div>
             </div>
           </section>

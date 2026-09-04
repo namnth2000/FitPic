@@ -14,9 +14,9 @@ Readable
 
 The UI should make this loop obvious without adding editor chrome:
 
-`Upload -> Ratio -> Background / Crop -> Preview -> Save / Download`
+`Upload -> Ratio -> Background / Crop -> Layout -> Preview -> Save / Download`
 
-For multiple images, the same ratio and background mode apply to the batch. Preview navigation lets users inspect each image without adding thumbnails or asset-manager UI.
+For multiple images, the same ratio, background mode and layout controls apply to the batch. Preview navigation lets users inspect each image without adding thumbnails or asset-manager UI.
 
 ## Visual system
 
@@ -106,7 +106,7 @@ Image-based should stay simple and inline:
 - Allow replacing or clearing the selected background image
 - Use one selected background image for the whole batch
 - Background image is centered and cover-fitted to the target ratio
-- Foreground source image stays center + contain, so no source content is cropped
+- Foreground source image stays contain, so no source content is cropped
 - Do not add blur amount, opacity, background reposition, per-image background, filters or a second editor
 - Saving is unavailable until a valid background image has been selected
 
@@ -120,12 +120,39 @@ Image-based should stay simple and inline:
 - Store crop position independently per source image
 - Do not add zoom, rotate or freeform crop handles in this scope
 
+### Layout controls
+
+Keep layout as a small independent panel below the background selector.
+
+#### Balance
+
+- Use a compact toggle plus slider
+- Applies only to Blur, White, Black, Custom and Image-based
+- Adds equal padding on all four sides using the canvas short edge as the reference
+- Slider range: 0% to 20%, step 1%, default 8% when enabled
+- Background always continues to fill the full canvas
+- Foreground uses contain inside the inset frame
+- One Balance value applies to the whole batch
+
+#### Radius
+
+- Use a compact toggle plus slider
+- Radius is only available while Balance is enabled
+- It rounds only the foreground image, never the output canvas or the background
+- Slider range: 0px to 32px, step 2px, default 12px
+- Keep the visual radius consistent between preview and export
+- One Radius value applies to the whole batch
+
+When Crop is selected, Balance and Radius remain visible but disabled with a short `Không áp dụng cho Crop` note. Switching away from Crop restores the previous layout settings.
+
+Do not add per-side padding, per-corner radius, borders, shadows or per-image layout settings.
+
 ### Batch preview
 
 - Previous / Next arrows inspect each source image
 - Show `current / total`
 - Hide navigation when there is only one image
-- Keep ratio and background mode shared across the batch
+- Keep ratio, background mode, Balance and Radius shared across the batch
 - Crop position remains per-image
 
 ## Interaction
@@ -145,6 +172,7 @@ Image-based should stay simple and inline:
 - Background choices use 2 columns on small mobile screens
 - Custom palette compresses from 8 to 6 columns on small screens
 - Image-based file actions wrap or collapse cleanly on small screens
+- Layout sliders keep readable values and tappable toggles on small screens
 - Simplify layout before shrinking text or touch targets
 
 ## Do
@@ -159,7 +187,9 @@ Image-based should stay simple and inline:
 ## Do not
 
 - Turn Image-based into a layered editor
-- Add per-image background selection in this pass
+- Add per-image background selection or per-image layout settings
+- Add per-side padding or per-corner radius controls
+- Change Crop behavior to support Balance or Radius
 - Add zoom, filters, stickers, text tools or editor timelines
 - Add a backend or upload user images to a server
 - Add large section headings only to explain obvious controls

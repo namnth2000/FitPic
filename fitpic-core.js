@@ -50,6 +50,19 @@
     };
   }
 
+  function getInsetRect(canvasWidth, canvasHeight, paddingRatio = 0) {
+    const normalized = Number.isFinite(paddingRatio)
+      ? Math.min(0.45, Math.max(0, paddingRatio))
+      : 0;
+    const inset = Math.min(canvasWidth, canvasHeight) * normalized;
+    return {
+      x: inset,
+      y: inset,
+      width: Math.max(0, canvasWidth - (inset * 2)),
+      height: Math.max(0, canvasHeight - (inset * 2)),
+    };
+  }
+
   function clampUnit(value) {
     if (!Number.isFinite(value)) return 0.5;
     return Math.min(1, Math.max(0, value));
@@ -82,6 +95,7 @@
     getPlatform,
     getCanvasSize,
     getContainRect,
+    getInsetRect,
     getCoverRect,
     getCropRect,
   };
