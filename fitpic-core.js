@@ -22,6 +22,7 @@
     { id: 'white', name: 'White' },
     { id: 'black', name: 'Black' },
     { id: 'custom', name: 'Custom' },
+    { id: 'image', name: 'Image-based' },
     { id: 'crop', name: 'Crop' },
   ];
 

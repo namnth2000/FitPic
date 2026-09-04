@@ -27,8 +27,8 @@ test('maps every supported placement to its specified aspect ratio', () => {
   assert.deepEqual(getPlatform('youtube-shorts').ratio, [9, 16]);
 });
 
-test('exposes Crop alongside the existing background choices', () => {
-  assert.deepEqual(backgrounds.map((background) => background.id), ['blur', 'white', 'black', 'custom', 'crop']);
+test('keeps Image-based after Custom and before Crop', () => {
+  assert.deepEqual(backgrounds.map((background) => background.id), ['blur', 'white', 'black', 'custom', 'image', 'crop']);
 });
 
 test('uses an exact output ratio with the requested long edge', () => {

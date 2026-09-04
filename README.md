@@ -2,7 +2,9 @@
 
 Static, client-side tool to format one or multiple images for common social placements.
 
-FitPic supports Instagram, TikTok, Facebook and YouTube aspect ratios. Users can preserve the whole image with blur/color backgrounds or choose Crop to fill the frame and drag each photo to the preferred position. Batch previews can be browsed with Previous / Next controls before exporting locally in the browser.
+FitPic supports Instagram, TikTok, Facebook and YouTube aspect ratios, lets users keep the full image with blur / color / image-based backgrounds or switch to Crop, previews every image in a batch, and exports each result locally in the browser.
+
+Image-based background uses one user-selected local image as the shared background for the whole batch. The background is centered and cover-fitted to the target canvas while the foreground image keeps the existing contain behavior.
 
 ## Local checks
 
