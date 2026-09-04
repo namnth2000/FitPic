@@ -1,6 +1,6 @@
 # Project
 
-FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định dạng social media. Người dùng có thể giữ trọn nội dung bằng nền hoặc chọn Crop để phủ kín khung và kéo chọn vùng giữ lại. Yêu cầu sản phẩm và phạm vi nằm trong `docs/Project_Spec.md`. Quyết định design nằm trong `DESIGN.md`.
+FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định dạng social media. Yêu cầu sản phẩm và phạm vi nằm trong `docs/Project_Spec.md`. Quyết định design nằm trong `DESIGN.md`.
 
 # Tech
 
@@ -13,7 +13,7 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 # Commands
 
 - `npm run check`: kiểm tra cú pháp JavaScript của app client-side.
-- `npm test`: chạy unit test cho mapping platform, output ratio và geometry contain/cover/crop.
+- `npm test`: chạy unit test cho mapping platform, background order, output ratio và geometry contain/cover/crop.
 - `npm run build`: validation syntax cho static deployment, không có bundling.
 - Deploy toàn bộ repository root lên Cloudflare Pages.
 
@@ -21,17 +21,18 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 
 - Keep image processing client-side to satisfy the privacy requirement and zero-cost constraint.
 - Platform / placement remains the user-facing concept, but the selector visually emphasizes aspect ratio with the social-network icon inside each compact tile.
-- Supported ratios and contain/cover/crop geometry are centralized in `fitpic-core.js`.
-- Blur Original is the default background mode.
-- Blur, White, Black and Custom keep the full foreground image using center + contain + maximum possible size.
-- Crop uses cover geometry. Each image starts at centered `cropX = 0.5`, `cropY = 0.5`; drag updates normalized coordinates in `[0, 1]` so preview and 2160px export stay aligned.
-- Crop position is the only per-image batch setting. Ratio and background mode remain shared by the whole batch.
-- Multiple uploaded images can be previewed with Previous / Next controls and a current/total counter. Do not add thumbnails or an asset manager for this.
-- On iPhone/iPad, prefer the Web Share API with the generated JPG `File` objects so one native share sheet receives the full batch and can offer Photos actions such as Save Image / Save Images.
+- Supported ratios and fill/background modes are centralized in `fitpic-core.js`.
+- Blur Original is the default background.
+- Custom background uses the curated palette plus native color and HEX input.
+- Image-based sits after Custom and before Crop. It uses one locally selected background image shared across the batch. The background uses centered cover; foreground images keep center + contain + maximum possible size.
+- Image-based must not upload the background image anywhere. Revoke its object URL when replaced or when the page unloads.
+- Export is disabled while Image-based is selected without a valid background image.
+- Crop fills the canvas with the source image, starts centered and stores normalized `cropX` / `cropY` separately per source image.
+- Multiple uploaded images share the same selected ratio and fill/background mode. Preview navigation can inspect each image; Crop position remains per-image.
+- On iPhone/iPad, prefer the Web Share API with generated JPG `File` objects so one native share sheet receives the full batch.
 - Desktop and browsers without file sharing keep the individual-download fallback.
-- If Safari loses the user activation while export files are being prepared, cache the prepared files so the next tap can open `navigator.share()` immediately without re-rendering the batch.
-- Invalidate pending share files whenever any output-affecting state changes, including crop position.
-- Do not add ZIP generation or a new dependency only for batch export unless real usage proves native share plus individual-download fallback are insufficient.
+- If Safari loses user activation while export files are being prepared, cache prepared files so the next tap can open `navigator.share()` immediately.
+- Do not add ZIP generation or a new dependency only for batch export unless real usage proves the existing paths insufficient.
 - Preview canvas uses a 960px long edge. Export renders each composition again at a 2160px long edge.
 - Output examples at 2160px long edge: 1:1 = 2160×2160, 4:5 = 1728×2160, 9:16 = 1215×2160, 16:9 = 2160×1215, 4:3 = 2160×1620, 3:4 = 1620×2160.
 - Theme defaults to `prefers-color-scheme`; an explicit user choice is stored locally under `fitpic-theme`.
@@ -40,10 +41,9 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 # Known Issues
 
 - Platform image recommendations can change over time. Keep platform-to-ratio mapping centralized and easy to update.
-- Large batches and large source images can increase browser memory usage. Prefer simple sequential decode/export before introducing optimization infrastructure.
+- Large batches and large source/background images can increase browser memory usage. Prefer simple sequential decode/export before introducing optimization infrastructure.
 - Web Share file support varies by browser. Keep the existing individual-download fallback for unsupported environments.
 - iOS still requires the user to choose the final action in the native share sheet; a web app cannot silently write directly into Photos.
-- Crop intentionally has no zoom control in this version. The image is always scaled just enough to cover the selected output ratio.
 
 # Before completing a task
 
