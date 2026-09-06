@@ -76,18 +76,18 @@ The emerald accent is a signal color. Do not flood large surfaces with it.
 
 Keep the modes in this order:
 
-1. Blur Original
+1. Blur
 2. White
 3. Black
 4. Custom
-5. Image-based
+5. Image
 6. Crop
 
-The order matters. Image-based is a background treatment like Custom, while Crop changes how the foreground fills the canvas.
+The order matters. Image is a background treatment like Custom, while Crop changes how the foreground fills the canvas.
 
 #### Custom
 
-When Custom is selected, reveal the palette inline below the choices. Do not open a large modal.
+When Custom is selected, reveal the palette inline below the choices. Do not open a large modal in FitPic Free.
 
 The custom palette contains 24 commonly useful colors arranged as three visually coherent rows:
 
@@ -97,9 +97,9 @@ The custom palette contains 24 commonly useful colors arranged as three visually
 
 Keep the native color input and HEX input available for colors outside the preset palette.
 
-#### Image-based
+#### Image
 
-Image-based should stay simple and inline:
+Image should stay simple and inline:
 
 - Reveal one compact local-file picker after the main background choices
 - Show the selected background filename
@@ -118,6 +118,7 @@ Image-based should stay simple and inline:
 - Show a subtle rule-of-thirds grid only while dragging
 - `Đặt lại` returns the current image to center
 - Store crop position independently per source image
+- Use the same compact diagonal crop-mark icon as FitPic Pro
 - Do not add zoom, rotate or freeform crop handles in this scope
 
 ### Layout controls
@@ -127,7 +128,7 @@ Keep layout as a small independent panel below the background selector.
 #### Balance
 
 - Use a compact toggle plus slider
-- Applies only to Blur, White, Black, Custom and Image-based
+- Applies only to Blur, White, Black, Custom and Image
 - Adds equal padding on all four sides using the canvas short edge as the reference
 - Slider range: 0% to 20%, step 1%, default 8% when enabled
 - Background always continues to fill the full canvas
@@ -171,7 +172,7 @@ Do not add per-side padding, per-corner radius, borders, shadows or per-image la
 - Ratio tiles use 5 columns on desktop and 4 on small mobile screens
 - Background choices use 2 columns on small mobile screens
 - Custom palette compresses from 8 to 6 columns on small screens
-- Image-based file actions wrap or collapse cleanly on small screens
+- Image file actions wrap or collapse cleanly on small screens
 - Layout sliders keep readable values and tappable toggles on small screens
 - Simplify layout before shrinking text or touch targets
 
@@ -186,7 +187,7 @@ Do not add per-side padding, per-corner radius, borders, shadows or per-image la
 
 ## Do not
 
-- Turn Image-based into a layered editor
+- Turn Image into a layered editor
 - Add per-image background selection or per-image layout settings
 - Add per-side padding or per-corner radius controls
 - Change Crop behavior to support Balance or Radius
