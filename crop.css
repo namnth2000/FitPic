@@ -69,10 +69,11 @@
 
 .background-sample--crop {
   border-radius: 3px;
-  background:
-    linear-gradient(90deg, currentColor 0 2px, transparent 2px calc(100% - 2px), currentColor calc(100% - 2px)),
-    linear-gradient(currentColor 0 2px, transparent 2px calc(100% - 2px), currentColor calc(100% - 2px));
-  color: var(--choice-text);
+  color: var(--line-strong);
+  background: linear-gradient(135deg,
+    transparent 42%,
+    currentColor 43% 57%,
+    transparent 58%);
 }
 
 .preview-frame.is-crop-mode #preview-canvas {
