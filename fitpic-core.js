@@ -18,11 +18,11 @@
   ];
 
   const backgrounds = [
-    { id: 'blur', name: 'Blur Original' },
+    { id: 'blur', name: 'Blur' },
     { id: 'white', name: 'White' },
     { id: 'black', name: 'Black' },
     { id: 'custom', name: 'Custom' },
-    { id: 'image', name: 'Image-based' },
+    { id: 'image', name: 'Image' },
     { id: 'crop', name: 'Crop' },
   ];
 

@@ -22,15 +22,16 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Keep image processing client-side to satisfy the privacy requirement and zero-cost constraint.
 - Platform / placement remains the user-facing concept, but the selector visually emphasizes aspect ratio with the social-network icon inside each compact tile.
 - Supported ratios and fill/background modes are centralized in `fitpic-core.js`.
-- Blur Original is the default background.
+- Blur is the default background.
 - Custom background uses the curated palette plus native color and HEX input.
-- Image-based sits after Custom and before Crop. It uses one locally selected background image shared across the batch. The background uses centered cover; foreground images use contain.
-- Image-based must not upload the background image anywhere. Revoke its object URL when replaced or when the page unloads.
-- Export is disabled while Image-based is selected without a valid background image.
-- Balance is a batch-level layout control for Blur, White, Black, Custom and Image-based only. It creates equal padding on all four sides using a percentage of the canvas short edge. Default when enabled is 8%, adjustable from 0% to 20%.
+- Image sits after Custom and before Crop. It uses one locally selected background image shared across the batch. The background uses centered cover; foreground images use contain.
+- Image must not upload the background image anywhere. Revoke its object URL when replaced or when the page unloads.
+- Export is disabled while Image is selected without a valid background image.
+- Balance is a batch-level layout control for Blur, White, Black, Custom and Image only. It creates equal padding on all four sides using a percentage of the canvas short edge. Default when enabled is 8%, adjustable from 0% to 20%.
 - Radius is a batch-level layout control for the foreground image only. It is available only while Balance is enabled, defaults to 12px and is adjustable from 0px to 32px. Radius scales consistently between the 960px preview render and 2160px export.
 - Crop keeps its existing behavior and ignores Balance and Radius. Do not change crop geometry, drag behavior or per-image crop state for layout-control work.
 - Crop fills the canvas with the source image, starts centered and stores normalized `cropX` / `cropY` separately per source image.
+- The Crop choice uses the same compact diagonal crop-mark icon as FitPic Pro.
 - Multiple uploaded images share the same selected ratio, fill/background mode, Balance and Radius settings. Preview navigation can inspect each image; Crop position remains per-image.
 - On iPhone/iPad, prefer the Web Share API with generated JPG `File` objects so one native share sheet receives the full batch.
 - Desktop and browsers without file sharing keep the individual-download fallback.
