@@ -5,24 +5,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung, dùng ảnh nền riêng, thêm lề cân đối hoặc crop đúng vùng bạn muốn." />
+    content="Chuẩn bị một hoặc nhiều ảnh đúng tỉ lệ cho Instagram, TikTok, Facebook và YouTube, giữ trọn nội dung, dùng ảnh nền riêng, thêm lề cân đối hoặc crop đúng vùng bạn muốn."
+    data-i18n-content="home.meta.description" />
   <meta name="application-name" content="FitPic" />
   <meta name="apple-mobile-web-app-title" content="FitPic" />
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
   <meta name="theme-color" content="#fbfcfb" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#0d1513" media="(prefers-color-scheme: dark)" />
   <meta property="og:type" content="website" />
-  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:locale" content="vi_VN" data-i18n-content="home.meta.locale" />
   <meta property="og:site_name" content="FitPic" />
-  <meta property="og:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
+  <meta property="og:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội"
+    data-i18n-content="home.meta.ogTitle" />
   <meta property="og:description"
-    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng, Balance hoặc crop đúng vùng bạn muốn." />
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng, Balance hoặc crop đúng vùng bạn muốn."
+    data-i18n-content="home.meta.ogDescription" />
   <meta property="og:url" content="https://fitpic.namnth.com/" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội" />
+  <meta name="twitter:title" content="FitPic - Chỉnh kích thước ảnh mạng xã hội"
+    data-i18n-content="home.meta.ogTitle" />
   <meta name="twitter:description"
-    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng, Balance hoặc crop đúng vùng bạn muốn." />
-  <title>FitPic - Chỉnh kích thước ảnh mạng xã hội</title>
+    content="Đưa một hoặc nhiều ảnh về đúng tỉ lệ cho mạng xã hội, dùng nền blur, màu, ảnh riêng, Balance hoặc crop đúng vùng bạn muốn."
+    data-i18n-content="home.meta.ogDescription" />
+  <title data-i18n="home.meta.title">FitPic - Chỉnh kích thước ảnh mạng xã hội</title>
   <link rel="canonical" href="https://fitpic.namnth.com/" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="site.webmanifest" />
@@ -30,6 +35,7 @@
   <link rel="stylesheet" href="crop.css" />
   <link rel="stylesheet" href="image-background.css" />
   <link rel="stylesheet" href="layout.css" />
+  <script src="i18n.js" defer></script>
   <script src="fitpic-core.js" defer></script>
   <script src="app.js" defer></script>
   <script type="application/ld+json">
@@ -42,7 +48,7 @@
       "description": "Công cụ web định dạng một hoặc nhiều ảnh cho mạng xã hội, hỗ trợ nền blur, màu, ảnh riêng, lề Balance, bo góc Radius và crop theo vị trí người dùng chọn.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
-      "inLanguage": "vi",
+      "inLanguage": ["vi", "en"],
       "isAccessibleForFree": true,
       "featureList": [
         "Định dạng ảnh cho Instagram, TikTok, Facebook và YouTube",
@@ -60,8 +66,12 @@
 
 <body>
   <header class="site-header">
-    <a class="wordmark" href="/" aria-label="FitPic trang chủ">Fit<span>Pic</span></a>
+    <a class="wordmark" href="/" aria-label="FitPic trang chủ" data-i18n-aria-label="common.homeAria">Fit<span>Pic</span></a>
     <div class="header-actions">
+      <select id="language-select" class="language-select" data-language-select aria-label="Ngôn ngữ">
+        <option value="vi">Tiếng Việt</option>
+        <option value="en">English</option>
+      </select>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Chuyển sang giao diện tối"
         aria-pressed="false">
         <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
@@ -73,67 +83,67 @@
             d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
         </svg>
       </button>
-      <a class="privacy-link" href="privacy.html">Quyền riêng tư</a>
+      <a class="privacy-link" href="privacy.html" data-i18n="common.privacy">Quyền riêng tư</a>
     </div>
   </header>
   <main>
     <section class="product-description" aria-label="Giới thiệu FitPic">
-      <p>Chọn một hoặc nhiều ảnh, tỉ lệ, nền hoặc crop ảnh</p>
+      <p data-i18n="home.intro">Chọn một hoặc nhiều ảnh, tỉ lệ, nền hoặc crop ảnh</p>
     </section>
 
-    <section class="workspace" aria-label="Tạo ảnh social media">
+    <section class="workspace" aria-label="Tạo ảnh social media" data-i18n-aria-label="home.workspaceAria">
       <div class="control-column">
-        <section class="panel upload-panel" aria-label="Chọn ảnh">
+        <section class="panel upload-panel" aria-label="Chọn ảnh" data-i18n-aria-label="home.uploadPanelAria">
           <label id="upload-label" class="upload-dropzone" for="image-upload">
             <span class="upload-icon" aria-hidden="true">↑</span>
-            <span class="upload-title">Tải ảnh từ thiết bị</span>
-            <span class="upload-copy">JPG, PNG, WebP hoặc GIF · có thể chọn nhiều ảnh</span>
-            <span class="upload-action">Chọn ảnh</span>
+            <span class="upload-title" data-i18n="home.uploadTitle">Tải ảnh từ thiết bị</span>
+            <span class="upload-copy" data-i18n="home.uploadCopy">JPG, PNG, WebP hoặc GIF · có thể chọn nhiều ảnh</span>
+            <span class="upload-action" data-i18n="home.uploadAction">Chọn ảnh</span>
           </label>
           <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple />
-          <p id="file-name" class="file-name">Ảnh được xử lý ngay trên thiết bị của bạn, không gửi ra ngoài.</p>
+          <p id="file-name" class="file-name" data-i18n="home.uploadPrivacy">Ảnh được xử lý ngay trên thiết bị của bạn, không gửi ra ngoài.</p>
           <p id="error-message" class="message error" role="alert" hidden></p>
         </section>
 
         <div id="editor" hidden>
-          <section class="panel" aria-label="Chọn tỉ lệ và nền tảng">
-            <div id="platform-options" class="platform-choice-grid" aria-label="Tỉ lệ ảnh"></div>
+          <section class="panel" aria-label="Chọn tỉ lệ và nền tảng" data-i18n-aria-label="home.platformPanelAria">
+            <div id="platform-options" class="platform-choice-grid" aria-label="Tỉ lệ ảnh" data-i18n-aria-label="home.platformGridAria"></div>
           </section>
-          <section class="panel" aria-label="Chọn nền hoặc crop">
-            <div id="background-options" class="background-options" aria-label="Cách lấp khung"></div>
+          <section class="panel" aria-label="Chọn nền hoặc crop" data-i18n-aria-label="home.backgroundPanelAria">
+            <div id="background-options" class="background-options" aria-label="Cách lấp khung" data-i18n-aria-label="home.backgroundGridAria"></div>
             <div id="custom-color-controls" class="custom-color-controls" hidden>
-              <div id="custom-color-palette" class="custom-color-palette" aria-label="Bảng màu tùy chỉnh"></div>
+              <div id="custom-color-palette" class="custom-color-palette" aria-label="Bảng màu tùy chỉnh" data-i18n-aria-label="home.customPaletteAria"></div>
               <div class="custom-color-row">
                 <label class="native-color-field" for="custom-color-input">
-                  <span>Màu</span>
-                  <input id="custom-color-input" type="color" value="#FFF8E7" aria-label="Chọn màu nền" />
+                  <span data-i18n="home.color">Màu</span>
+                  <input id="custom-color-input" type="color" value="#FFF8E7" aria-label="Chọn màu nền" data-i18n-aria-label="home.colorAria" />
                 </label>
                 <label class="hex-field" for="custom-color-hex">
                   <span>HEX</span>
                   <input id="custom-color-hex" type="text" inputmode="text" maxlength="7" value="#FFF8E7"
-                    autocomplete="off" spellcheck="false" aria-label="Mã màu HEX" />
+                    autocomplete="off" spellcheck="false" aria-label="Mã màu HEX" data-i18n-aria-label="home.hexAria" />
                 </label>
               </div>
             </div>
             <div id="image-background-controls" class="image-background-controls" hidden>
               <div class="image-background-copy">
-                <strong>Nền bằng ảnh tự chọn</strong>
-                <span id="image-background-name">   </span>
+                <strong data-i18n="home.imageBackgroundTitle">Nền bằng ảnh tự chọn</strong>
+                <span id="image-background-name"></span>
               </div>
               <div class="image-background-actions">
                 <label class="image-background-picker" for="image-background-input">
-                  <span id="image-background-action">Chọn ảnh nền</span>
+                  <span id="image-background-action" data-i18n="home.imageBackgroundSelect">Chọn ảnh nền</span>
                 </label>
                 <input id="image-background-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
-                <button id="clear-image-background" class="image-background-clear" type="button" hidden>Xóa</button>
+                <button id="clear-image-background" class="image-background-clear" type="button" hidden data-i18n="home.imageBackgroundClear">Xóa</button>
               </div>
             </div>
           </section>
 
-          <section id="layout-controls" class="panel layout-panel" aria-label="Bố cục ảnh">
+          <section id="layout-controls" class="panel layout-panel" aria-label="Bố cục ảnh" data-i18n-aria-label="home.layoutPanelAria">
             <div class="layout-heading">
               <span class="layout-title">Layout</span>
-              <span id="layout-mode-note" class="layout-mode-note" hidden>Không áp dụng cho Crop</span>
+              <span id="layout-mode-note" class="layout-mode-note" hidden data-i18n="home.layoutCropNote">Không áp dụng cho Crop</span>
             </div>
 
             <div class="layout-control">
@@ -147,7 +157,7 @@
                 </span>
               </label>
               <div id="balance-details" class="layout-slider-row" hidden>
-                <label for="balance-slider">Padding</label>
+                <label for="balance-slider" data-i18n="home.padding">Padding</label>
                 <input id="balance-slider" type="range" min="0" max="20" step="1" value="8" />
                 <output id="balance-value" for="balance-slider">8%</output>
               </div>
@@ -164,7 +174,7 @@
                 </span>
               </label>
               <div id="radius-details" class="layout-slider-row" hidden>
-                <label for="radius-slider">Corner</label>
+                <label for="radius-slider" data-i18n="home.corner">Corner</label>
                 <input id="radius-slider" type="range" min="0" max="32" step="2" value="12" />
                 <output id="radius-value" for="radius-slider">12px</output>
               </div>
@@ -173,38 +183,38 @@
         </div>
       </div>
 
-      <section class="preview-column" aria-label="Ảnh xem trước">
+      <section class="preview-column" aria-label="Ảnh xem trước" data-i18n-aria-label="home.previewColumnAria">
         <div class="preview-heading">
-          <div id="preview-navigation" class="preview-navigation" aria-label="Điều hướng ảnh xem trước" hidden>
-            <button id="preview-previous" class="preview-nav-button" type="button" aria-label="Xem ảnh trước">
+          <div id="preview-navigation" class="preview-navigation" aria-label="Điều hướng ảnh xem trước" data-i18n-aria-label="home.previewNavigationAria" hidden>
+            <button id="preview-previous" class="preview-nav-button" type="button" aria-label="Xem ảnh trước" data-i18n-aria-label="home.previewPreviousAria">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6" /></svg>
             </button>
             <span id="preview-counter" class="preview-counter" aria-live="polite">0 / 0</span>
-            <button id="preview-next" class="preview-nav-button" type="button" aria-label="Xem ảnh tiếp theo">
+            <button id="preview-next" class="preview-nav-button" type="button" aria-label="Xem ảnh tiếp theo" data-i18n-aria-label="home.previewNextAria">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6" /></svg>
             </button>
           </div>
-          <span id="preview-note" class="device-note">Không crop</span>
+          <span id="preview-note" class="device-note" data-i18n="home.previewNoCrop">Không crop</span>
         </div>
         <div class="preview-stage">
           <div class="preview-frame">
             <div class="empty-preview" id="empty-preview" aria-hidden="true">
-              <span>Ảnh xem trước sẽ hiện tại đây</span>
+              <span data-i18n="home.previewEmpty">Ảnh xem trước sẽ hiện tại đây</span>
             </div>
-            <canvas id="preview-canvas" aria-label="Bản xem trước ảnh đã định dạng"></canvas>
+            <canvas id="preview-canvas" aria-label="Bản xem trước ảnh đã định dạng" data-i18n-aria-label="home.previewCanvasAria"></canvas>
             <div class="crop-grid" aria-hidden="true"></div>
           </div>
         </div>
         <div id="crop-controls" class="crop-controls" hidden>
-          <span class="crop-hint">Kéo ảnh để chọn vùng giữ lại</span>
-          <button id="reset-crop" class="reset-crop-button" type="button">Đặt lại</button>
+          <span class="crop-hint" data-i18n="home.cropHint">Kéo ảnh để chọn vùng giữ lại</span>
+          <button id="reset-crop" class="reset-crop-button" type="button" data-i18n="home.reset">Đặt lại</button>
         </div>
-        <button id="download-button" class="download-button" type="button" disabled>Tải ảnh JPG</button>
+        <button id="download-button" class="download-button" type="button" disabled data-i18n="home.download">Tải ảnh JPG</button>
         <p id="status-message" class="message status" aria-live="polite"></p>
       </section>
     </section>
   </main>
-  <footer><span>FitPic xử lý ảnh ngay trên thiết bị của bạn.</span><a href="privacy.html">Tìm hiểu thêm</a></footer>
+  <footer><span data-i18n="home.footerCopy">FitPic xử lý ảnh ngay trên thiết bị của bạn.</span><a href="privacy.html" data-i18n="home.learnMore">Tìm hiểu thêm</a></footer>
 </body>
 
 </html>
