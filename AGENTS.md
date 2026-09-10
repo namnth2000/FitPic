@@ -12,8 +12,8 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 
 # Commands
 
-- `npm run check`: kiểm tra cú pháp JavaScript của app client-side.
-- `npm test`: chạy unit test cho mapping platform, background order, output ratio và geometry contain/inset/cover/crop.
+- `npm run check`: kiểm tra cú pháp JavaScript của app client-side, gồm core, i18n và app.
+- `npm test`: chạy unit test cho mapping platform, background order, output ratio, geometry contain/inset/cover/crop và language resolution.
 - `npm run build`: validation syntax cho static deployment, không có bundling.
 - Deploy toàn bộ repository root lên Cloudflare Pages.
 
@@ -40,6 +40,9 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Preview canvas uses a 960px long edge. Export renders each composition again at a 2160px long edge.
 - Output examples at 2160px long edge: 1:1 = 2160×2160, 4:5 = 1728×2160, 9:16 = 1215×2160, 16:9 = 2160×1215, 4:3 = 2160×1620, 3:4 = 1620×2160.
 - Theme defaults to `prefers-color-scheme`; an explicit user choice is stored locally under `fitpic-theme`.
+- UI supports Vietnamese and English. If the user has not chosen a language, use `navigator.languages` / `navigator.language`: Vietnamese locales use `vi`, all other locales fall back to `en`. An explicit choice is stored locally under `fitpic-language`.
+- Keep user-facing translations centralized in `i18n.js`; do not add a localization dependency or backend for the current two-language scope.
+- Cloudflare Pages serves repository-root `_headers`. `Cache-Control: no-cache, must-revalidate` is intentional so browsers may keep local copies but must revalidate them before use, preventing stale HTML/JS/CSS after a deploy without introducing a service worker.
 - Production URL is `https://fitpic.namnth.com/`.
 
 # Known Issues
