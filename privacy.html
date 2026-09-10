@@ -3,39 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Chính sách quyền riêng tư của FitPic." />
+    <meta name="description" content="Chính sách quyền riêng tư của FitPic." data-i18n-content="privacy.meta.description" />
     <meta name="robots" content="index,follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale" content="vi_VN" data-i18n-content="privacy.meta.locale" />
     <meta property="og:site_name" content="FitPic" />
-    <meta property="og:title" content="Quyền riêng tư - FitPic" />
-    <meta property="og:description" content="Tìm hiểu cách FitPic xử lý ảnh ngay trên thiết bị của bạn." />
+    <meta property="og:title" content="Quyền riêng tư - FitPic" data-i18n-content="privacy.meta.ogTitle" />
+    <meta property="og:description" content="Tìm hiểu cách FitPic xử lý ảnh ngay trên thiết bị của bạn." data-i18n-content="privacy.meta.ogDescription" />
     <meta property="og:url" content="https://fitpic.namnth.com/privacy.html" />
-    <title>Quyền riêng tư - FitPic</title>
+    <title data-i18n="privacy.meta.title">Quyền riêng tư - FitPic</title>
     <link rel="canonical" href="https://fitpic.namnth.com/privacy.html" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="site.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="language.css" />
+    <script src="i18n.js" defer></script>
   </head>
   <body>
-    <header class="site-header"><a class="wordmark" href="/" aria-label="FitPic trang chủ">Fit<span>Pic</span></a><a class="privacy-link" href="index.html">Về FitPic</a></header>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="FitPic trang chủ" data-i18n-aria-label="common.homeAria">Fit<span>Pic</span></a>
+      <div class="header-actions">
+        <select id="language-select" class="language-select" data-language-select aria-label="Ngôn ngữ">
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+        <a class="privacy-link" href="index.html" data-i18n="common.backToFitPic">Về FitPic</a>
+      </div>
+    </header>
     <main class="policy-page">
-      <p class="eyebrow">QUYỀN RIÊNG TƯ</p>
-      <h1>Ảnh của bạn ở lại trên thiết bị.</h1>
-      <p>FitPic được xây dựng để chuẩn bị ảnh đăng mạng xã hội mà không cần gửi ảnh lên máy chủ.</p>
+      <p class="eyebrow" data-i18n="privacy.eyebrow">QUYỀN RIÊNG TƯ</p>
+      <h1 data-i18n="privacy.title">Ảnh của bạn ở lại trên thiết bị.</h1>
+      <p data-i18n="privacy.intro">FitPic được xây dựng để chuẩn bị ảnh đăng mạng xã hội mà không cần gửi ảnh lên máy chủ.</p>
       <section>
-        <h2>FitPic xử lý gì?</h2>
-        <p>Khi bạn chọn ảnh, trình duyệt của bạn đọc ảnh đó cục bộ để tạo preview và file tải xuống. Tùy chọn nơi đăng và nền cũng chỉ được dùng trong phiên làm việc hiện tại.</p>
+        <h2 data-i18n="privacy.whatTitle">FitPic xử lý gì?</h2>
+        <p data-i18n="privacy.whatBody">Khi bạn chọn ảnh, trình duyệt của bạn đọc ảnh đó cục bộ để tạo preview và file tải xuống. Tùy chọn nơi đăng và nền cũng chỉ được dùng trong phiên làm việc hiện tại.</p>
       </section>
       <section>
-        <h2>FitPic không làm gì?</h2>
-        <p>Chúng tôi không upload, lưu trữ, chia sẻ hoặc sử dụng ảnh của bạn trên máy chủ. FitPic không yêu cầu tài khoản, đăng nhập hoặc cung cấp thông tin cá nhân.</p>
+        <h2 data-i18n="privacy.notTitle">FitPic không làm gì?</h2>
+        <p data-i18n="privacy.notBody">Chúng tôi không upload, lưu trữ, chia sẻ hoặc sử dụng ảnh của bạn trên máy chủ. FitPic không yêu cầu tài khoản, đăng nhập hoặc cung cấp thông tin cá nhân.</p>
       </section>
       <section>
-        <h2>File tải xuống</h2>
-        <p>File kết quả được tạo trực tiếp trong trình duyệt và tải về thiết bị của bạn. Khi bạn đóng hoặc tải lại trang, ảnh đã chọn không còn được FitPic giữ lại.</p>
+        <h2 data-i18n="privacy.downloadTitle">File tải xuống</h2>
+        <p data-i18n="privacy.downloadBody">File kết quả được tạo trực tiếp trong trình duyệt và tải về thiết bị của bạn. Khi bạn đóng hoặc tải lại trang, ảnh đã chọn không còn được FitPic giữ lại.</p>
       </section>
-      <a class="back-link" href="index.html">← Quay lại FitPic</a>
+      <a class="back-link" href="index.html" data-i18n="privacy.back">← Quay lại FitPic</a>
     </main>
   </body>
 </html>
