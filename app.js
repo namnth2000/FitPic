@@ -9,6 +9,7 @@
     getCoverRect,
     getCropRect,
   } = window.FitPicCore;
+  const { t, onChange } = window.FitPicI18n;
 
   const previewCanvas = document.querySelector('#preview-canvas');
   const uploadInput = document.querySelector('#image-upload');
@@ -134,7 +135,7 @@
       ? document.documentElement.dataset.theme === 'dark'
       : prefersDarkTheme();
     themeToggle.setAttribute('aria-pressed', String(isDark));
-    themeToggle.setAttribute('aria-label', isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối');
+    themeToggle.setAttribute('aria-label', t(isDark ? 'common.themeToLight' : 'common.themeToDark'));
   }
 
   function setTheme(theme) {
@@ -189,12 +190,13 @@
   }
 
   function platformMarkup() {
-    return platforms.map((item) => (
-      `<button type="button" class="platform-choice" data-platform="${item.id}" aria-pressed="false" aria-label="${item.name}, tỉ lệ ${item.ratio[0]}:${item.ratio[1]}">
+    return platforms.map((item) => {
+      const ratio = `${item.ratio[0]}:${item.ratio[1]}`;
+      return `<button type="button" class="platform-choice" data-platform="${item.id}" aria-pressed="false" aria-label="${t('app.platformAria', { name: item.name, ratio })}">
         <span class="platform-icon-wrap">${platformIconSvg(item.network)}</span>
-        <span class="platform-ratio">${item.ratio[0]}:${item.ratio[1]}</span>
-      </button>`
-    )).join('');
+        <span class="platform-ratio">${ratio}</span>
+      </button>`;
+    }).join('');
   }
 
   function backgroundMarkup() {
@@ -207,7 +209,7 @@
 
   function renderCustomPalette() {
     customColorPalette.innerHTML = paletteColors.map((color) => (
-      `<button type="button" class="palette-swatch" data-custom-color="${color.value}" style="--picker-color:${color.value}" aria-label="Dùng màu ${color.name}, ${color.value}"></button>`
+      `<button type="button" class="palette-swatch" data-custom-color="${color.value}" style="--picker-color:${color.value}" aria-label="${t('app.paletteAria', { name: color.name, value: color.value })}"></button>`
     )).join('');
   }
 
@@ -238,10 +240,10 @@
     const isImageBased = state.backgroundId === 'image';
     imageBackgroundControls.hidden = !isImageBased;
     const background = state.backgroundImage;
-    imageBackgroundAction.textContent = background ? 'Thay ảnh nền' : 'Chọn ảnh nền';
+    imageBackgroundAction.textContent = background ? t('app.imageReplace') : t('app.imageSelect');
     imageBackgroundName.textContent = background
       ? background.file.name
-      : 'Ảnh nền sẽ được căn giữa và cover toàn bộ khung.';
+      : t('app.imageDescription');
     clearImageBackgroundButton.hidden = !background;
   }
 
@@ -277,8 +279,8 @@
     cropControls.hidden = !isCrop;
     previewFrame.classList.toggle('is-crop-mode', isCrop);
     previewCanvas.setAttribute('aria-label', isCrop
-      ? 'Bản xem trước ảnh crop. Kéo ảnh để thay đổi vùng giữ lại.'
-      : 'Bản xem trước ảnh đã định dạng');
+      ? t('app.previewCanvasCropAria')
+      : t('home.previewCanvasAria'));
 
     const entry = activeImageEntry();
     resetCropButton.disabled = !entry || (entry.cropX === 0.5 && entry.cropY === 0.5);
@@ -294,9 +296,13 @@
     const count = state.images.length;
     const useNativeShare = prefersNativeImageShare();
     if (useNativeShare) {
-      downloadButton.textContent = count > 1 ? `Lưu ${count} ảnh` : 'Lưu ảnh';
+      downloadButton.textContent = count > 1
+        ? t('app.downloadSaveMany', { count })
+        : t('app.downloadSaveOne');
     } else {
-      downloadButton.textContent = count > 1 ? `Tải ${count} ảnh JPG` : 'Tải ảnh JPG';
+      downloadButton.textContent = count > 1
+        ? t('app.downloadMany', { count })
+        : t('app.downloadOne');
     }
     downloadButton.disabled = !isExportReady();
   }
@@ -310,13 +316,24 @@
     nextPreviewButton.disabled = state.previewIndex >= count - 1;
 
     if (state.backgroundId === 'crop') {
-      previewNote.textContent = 'Crop';
+      previewNote.textContent = t('app.previewCrop');
     } else if (state.backgroundId === 'image') {
-      previewNote.textContent = 'Image-based';
+      previewNote.textContent = t('app.previewImage');
     } else {
-      previewNote.textContent = 'Không crop';
+      previewNote.textContent = t('app.previewNoCrop');
     }
     syncEditorControls();
+  }
+
+  function updateFileNameUi() {
+    const first = state.images[0];
+    if (!first) {
+      fileName.textContent = t('home.uploadPrivacy');
+      return;
+    }
+    fileName.textContent = state.images.length === 1
+      ? `${first.file.name} - ${first.image.naturalWidth} × ${first.image.naturalHeight}px`
+      : t('app.uploadSelectedMany', { count: state.images.length });
   }
 
   function drawImageBasedBackground(context, width, height) {
@@ -472,11 +489,11 @@
     const unsupportedCount = files.length - supportedFiles.length;
     if (!supportedFiles.length) {
       event.target.value = '';
-      setError('Hãy chọn file ảnh hợp lệ (JPG, PNG, WebP hoặc GIF).');
+      setError(t('app.uploadInvalid'));
       return;
     }
 
-    setStatus(`Đang đọc ${supportedFiles.length} ảnh trên thiết bị của bạn...`);
+    setStatus(t('app.uploadReading', { count: supportedFiles.length }));
     uploadLabel.classList.add('is-loading');
     const decoded = [];
     let failedCount = unsupportedCount;
@@ -494,7 +511,7 @@
 
       if (!decoded.length) {
         event.target.value = '';
-        setError('Không thể đọc các ảnh đã chọn. Hãy thử file ảnh khác.');
+        setError(t('app.uploadReadFailed'));
         setStatus('');
         return;
       }
@@ -503,20 +520,17 @@
       invalidatePendingShare();
       state.images = decoded;
       state.previewIndex = 0;
-      const first = decoded[0];
-      fileName.textContent = decoded.length === 1
-        ? `${first.file.name} - ${first.image.naturalWidth} × ${first.image.naturalHeight}px`
-        : `${decoded.length} ảnh đã chọn. Dùng mũi tên ở preview để xem từng ảnh; tỉ lệ và chế độ nền áp dụng cho cả batch.`;
+      updateFileNameUi();
       editor.hidden = false;
       updateDownloadUi();
       renderPreview();
 
       if (failedCount) {
-        setError(`${failedCount} file không hợp lệ hoặc không đọc được đã được bỏ qua.`);
+        setError(t('app.uploadSkipped', { count: failedCount }));
       }
       setStatus(decoded.length > 1
-        ? `${decoded.length} ảnh đã sẵn sàng. Bạn có thể xem từng ảnh trước khi lưu.`
-        : 'Ảnh đã sẵn sàng. Chọn tỉ lệ và nền để xem kết quả.');
+        ? t('app.uploadReadyMany', { count: decoded.length })
+        : t('app.uploadReadyOne'));
     } finally {
       uploadLabel.classList.remove('is-loading');
     }
@@ -529,11 +543,11 @@
 
     if (!supportedImageTypes.has(file.type)) {
       event.target.value = '';
-      setError('Hãy chọn ảnh nền hợp lệ (JPG, PNG, WebP hoặc GIF).');
+      setError(t('app.backgroundInvalid'));
       return;
     }
 
-    setStatus('Đang đọc ảnh nền trên thiết bị của bạn...');
+    setStatus(t('app.backgroundReading'));
     try {
       const nextBackground = await loadImageFile(file, false);
       if (!nextBackground.image.naturalWidth || !nextBackground.image.naturalHeight) {
@@ -548,10 +562,10 @@
       updateChoiceButtons();
       updateDownloadUi();
       renderPreview();
-      setStatus(`Đang dùng ${file.name} làm ảnh nền cho toàn bộ batch.`);
+      setStatus(t('app.backgroundUsing', { name: file.name }));
     } catch (error) {
       event.target.value = '';
-      setError('Không thể đọc ảnh nền. Hãy thử file ảnh khác.');
+      setError(t('app.backgroundReadFailed'));
       setStatus('');
     }
   }
@@ -563,7 +577,7 @@
     invalidatePendingShare();
     updateDownloadUi();
     renderPreview();
-    setStatus('Đã xóa ảnh nền. Chọn ảnh nền mới để tiếp tục với Image-based.');
+    setStatus(t('app.backgroundRemoved'));
   }
 
   function changePlatform(event) {
@@ -573,7 +587,10 @@
     invalidatePendingShare();
     updateChoiceButtons();
     renderPreview();
-    setStatus(`Đã chọn ${getPlatform(state.platformId).name}, tỉ lệ ${ratioLabel()}.`);
+    setStatus(t('app.platformSelected', {
+      name: getPlatform(state.platformId).name,
+      ratio: ratioLabel(),
+    }));
   }
 
   function changeBackground(event) {
@@ -586,15 +603,15 @@
     renderPreview();
 
     if (state.backgroundId === 'crop') {
-      setStatus('Crop phủ kín khung. Balance và Radius tạm không áp dụng.');
+      setStatus(t('app.backgroundCrop'));
     } else if (state.backgroundId === 'custom') {
-      setStatus(`Đang dùng nền ${state.customColor}.`);
+      setStatus(t('app.backgroundCustom', { color: state.customColor }));
     } else if (state.backgroundId === 'image') {
       setStatus(state.backgroundImage
-        ? `Đang dùng ${state.backgroundImage.file.name} làm ảnh nền cho toàn bộ batch.`
-        : 'Chọn một ảnh nền để dùng chế độ Image-based.');
+        ? t('app.backgroundUsing', { name: state.backgroundImage.file.name })
+        : t('app.backgroundChooseImage'));
     } else {
-      setStatus(`Đã đổi nền thành ${button.textContent.trim()}.`);
+      setStatus(t('app.backgroundChanged', { name: button.textContent.trim() }));
     }
   }
 
@@ -607,7 +624,7 @@
     updateChoiceButtons();
     updateDownloadUi();
     renderPreview();
-    setStatus(`Đang dùng nền ${normalized}.`);
+    setStatus(t('app.backgroundCustom', { color: normalized }));
     return true;
   }
 
@@ -634,15 +651,15 @@
     invalidatePendingShare();
     renderPreview();
     setStatus(state.balanceEnabled
-      ? `Balance đang bật với lề ${Math.round(state.balancePadding * 100)}%.`
-      : 'Balance đã tắt.');
+      ? t('app.balanceOn', { value: Math.round(state.balancePadding * 100) })
+      : t('app.balanceOff'));
   }
 
   function changeBalancePadding() {
     state.balancePadding = Number(balanceSlider.value) / 100;
     invalidatePendingShare();
     renderPreview();
-    setStatus(`Lề Balance: ${balanceSlider.value}%.`);
+    setStatus(t('app.balanceValue', { value: balanceSlider.value }));
   }
 
   function toggleRadius() {
@@ -651,15 +668,15 @@
     invalidatePendingShare();
     renderPreview();
     setStatus(state.radiusEnabled
-      ? `Radius đang bật ở ${state.radiusPx}px.`
-      : 'Radius đã tắt.');
+      ? t('app.radiusOn', { value: state.radiusPx })
+      : t('app.radiusOff'));
   }
 
   function changeRadius() {
     state.radiusPx = Number(radiusSlider.value);
     invalidatePendingShare();
     renderPreview();
-    setStatus(`Radius: ${state.radiusPx}px.`);
+    setStatus(t('app.radiusValue', { value: state.radiusPx }));
   }
 
   function goToPreview(index) {
@@ -686,7 +703,7 @@
     entry.cropY = 0.5;
     invalidatePendingShare();
     renderPreview();
-    setStatus(`Đã đặt lại crop cho ảnh ${state.previewIndex + 1}.`);
+    setStatus(t('app.cropReset', { index: state.previewIndex + 1 }));
   }
 
   function cropOverflow(entry) {
@@ -813,13 +830,13 @@
   function handleShareFailure(error, files) {
     if (error?.name === 'AbortError') {
       state.pendingShareFiles = files;
-      setStatus('Đã hủy lưu/chia sẻ. Nhấn lại nếu bạn muốn mở menu lưu ảnh.');
+      setStatus(t('app.shareCancelled'));
       return true;
     }
 
     if (error?.name === 'NotAllowedError') {
       state.pendingShareFiles = files;
-      setStatus(`Ảnh đã sẵn sàng. Nhấn lại "${downloadButton.textContent}" để mở menu lưu ảnh.`);
+      setStatus(t('app.shareRetry', { button: downloadButton.textContent }));
       return true;
     }
 
@@ -829,7 +846,7 @@
   async function downloadImages() {
     if (!state.images.length) return;
     if (!isExportReady()) {
-      setError('Hãy chọn ảnh nền trước khi lưu với chế độ Image-based.');
+      setError(t('app.missingBackground'));
       setStatus('');
       return;
     }
@@ -840,14 +857,14 @@
       try {
         await shareExportFiles(cachedFiles);
         setStatus(cachedFiles.length > 1
-          ? `Đã mở menu lưu/chia sẻ cho ${cachedFiles.length} ảnh.`
-          : 'Đã mở menu lưu/chia sẻ ảnh.');
+          ? t('app.shareOpenedMany', { count: cachedFiles.length })
+          : t('app.shareOpenedOne'));
       } catch (error) {
         if (!handleShareFailure(error, cachedFiles)) {
           downloadFiles(cachedFiles);
           setStatus(cachedFiles.length > 1
-            ? 'Không thể mở menu chia sẻ. FitPic đã dùng cách tải file dự phòng.'
-            : 'Không thể mở menu chia sẻ. FitPic đã tải file dự phòng.');
+            ? t('app.shareFallbackMany')
+            : t('app.shareFallbackOne'));
         }
       }
       return;
@@ -857,8 +874,8 @@
     setError('');
     const wantsNativeShare = prefersNativeImageShare();
     setStatus(state.images.length > 1
-      ? `Đang chuẩn bị ${state.images.length} ảnh...`
-      : 'Đang chuẩn bị ảnh...');
+      ? t('app.preparingMany', { count: state.images.length })
+      : t('app.preparingOne'));
 
     await new Promise((resolve) => window.requestAnimationFrame(resolve));
     try {
@@ -870,26 +887,26 @@
           await shareExportFiles(files);
           state.pendingShareFiles = null;
           setStatus(files.length > 1
-            ? `Đã mở menu lưu/chia sẻ cho ${files.length} ảnh.`
-            : 'Đã mở menu lưu/chia sẻ ảnh.');
+            ? t('app.shareOpenedMany', { count: files.length })
+            : t('app.shareOpenedOne'));
         } catch (error) {
           if (!handleShareFailure(error, files)) {
             state.pendingShareFiles = null;
             downloadFiles(files);
             setStatus(files.length > 1
-              ? 'Không thể mở menu chia sẻ. FitPic đã dùng cách tải file dự phòng.'
-              : 'Không thể mở menu chia sẻ. FitPic đã tải file dự phòng.');
+              ? t('app.shareFallbackMany')
+              : t('app.shareFallbackOne'));
           }
         }
       } else {
         downloadFiles(files);
         setStatus(files.length > 1
-          ? `${files.length} ảnh đã được tạo. Trình duyệt có thể hỏi quyền tải nhiều file.`
-          : 'Ảnh đã được tạo để tải xuống.');
+          ? t('app.downloadCreatedMany', { count: files.length })
+          : t('app.downloadCreatedOne'));
       }
     } catch (error) {
       invalidatePendingShare();
-      setError('Không thể tạo đầy đủ file ảnh. Hãy thử lại.');
+      setError(t('app.exportFailed'));
       setStatus('');
     } finally {
       updateDownloadUi();
@@ -950,9 +967,19 @@
     releaseImages();
     releaseImageEntry(state.backgroundImage);
   });
+  onChange(() => {
+    setError('');
+    setStatus('');
+    renderChoices();
+    updateFileNameUi();
+    updateThemeToggle();
+    updateDownloadUi();
+    updatePreviewUi();
+  });
 
   initializeTheme();
   renderChoices();
+  updateFileNameUi();
   updateDownloadUi();
   updatePreviewUi();
 })();
