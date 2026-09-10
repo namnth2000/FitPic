@@ -58,6 +58,8 @@
       'home.cropHint': 'Kéo ảnh để chọn vùng giữ lại',
       'home.reset': 'Đặt lại',
       'home.download': 'Tải ảnh JPG',
+      'home.ntrvPromo': 'Muốn tạo bố cục nhiều ảnh hoặc chỉnh sửa nhiều hơn?',
+      'home.ntrvPromoLink': 'Thử NTRV.',
       'home.footerCopy': 'FitPic xử lý ảnh ngay trên thiết bị của bạn.',
       'home.learnMore': 'Tìm hiểu thêm',
 
@@ -172,6 +174,8 @@
       'home.cropHint': 'Drag the image to choose the area to keep',
       'home.reset': 'Reset',
       'home.download': 'Download JPG',
+      'home.ntrvPromo': 'Want to create multi-photo layouts or edit more?',
+      'home.ntrvPromoLink': 'Try NTRV.',
       'home.footerCopy': 'FitPic processes images directly on your device.',
       'home.learnMore': 'Learn more',
 
