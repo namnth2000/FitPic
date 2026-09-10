@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "check": "node --check fitpic-core.js && node --check app.js",
-    "test": "node --test tests/core.test.js",
-    "build": "node --check fitpic-core.js && node --check app.js"
+    "check": "node --check fitpic-core.js && node --check i18n.js && node --check app.js",
+    "test": "node --test tests/*.test.js",
+    "build": "node --check fitpic-core.js && node --check i18n.js && node --check app.js"
   }
 }
