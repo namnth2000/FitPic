@@ -10,6 +10,7 @@
     getCropRect,
   } = window.FitPicCore;
   const { t, onChange } = window.FitPicI18n;
+  const { captureSettings, sameSettings, normalizeName, loadPresets, savePresets } = window.FitPicPresets;
 
   const previewCanvas = document.querySelector('#preview-canvas');
   const uploadInput = document.querySelector('#image-upload');
@@ -49,6 +50,20 @@
   const nextPreviewButton = document.querySelector('#preview-next');
   const previewCounter = document.querySelector('#preview-counter');
   const themeToggle = document.querySelector('#theme-toggle');
+  const presetSelect = document.querySelector('#preset-select');
+  const savePresetButton = document.querySelector('#save-preset');
+  const presetActions = document.querySelector('#preset-actions');
+  const updatePresetButton = document.querySelector('#update-preset');
+  const reapplyPresetButton = document.querySelector('#reapply-preset');
+  const renamePresetButton = document.querySelector('#rename-preset');
+  const deletePresetButton = document.querySelector('#delete-preset');
+  const presetModified = document.querySelector('#preset-modified');
+  const presetImageNote = document.querySelector('#preset-image-note');
+  const presetForm = document.querySelector('#preset-form');
+  const presetName = document.querySelector('#preset-name');
+  const presetNameLabel = document.querySelector('#preset-name-label');
+  const cancelPresetButton = document.querySelector('#cancel-preset');
+  const presetFeedback = document.querySelector('#preset-feedback');
 
   const defaultCustomColor = '#FFF8E7';
   const paletteColors = [
@@ -97,6 +112,137 @@
   const exportLongEdge = 2160;
   const radiusReferenceWidth = 360;
   const supportedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+  const getPresetStorage = () => window.localStorage;
+  const storedPresets = loadPresets(getPresetStorage);
+  let presets = storedPresets.presets;
+  let selectedPresetId = '';
+  let presetFormMode = null;
+  let presetFeedbackState = null;
+
+  function selectedPreset() {
+    return presets.find(({ id }) => id === selectedPresetId);
+  }
+
+  function setPresetFeedback(key, variables = {}, isError = false) {
+    presetFeedbackState = key ? { key, variables, isError } : null;
+    presetFeedback.textContent = key ? t(key, variables) : '';
+    presetFeedback.classList.toggle('error', isError);
+  }
+
+  function renderPresetOptions() {
+    const options = [new Option(t('presets.current'), '')];
+    presets.forEach((preset) => options.push(new Option(preset.name, preset.id)));
+    presetSelect.replaceChildren(...options);
+    presetSelect.value = selectedPresetId;
+    syncPresetControls();
+  }
+
+  function syncPresetControls() {
+    const preset = selectedPreset();
+    const modified = Boolean(preset && !sameSettings(preset.settings, state));
+    presetActions.hidden = !preset;
+    updatePresetButton.disabled = !modified;
+    reapplyPresetButton.hidden = !modified;
+    presetModified.hidden = !modified;
+    presetImageNote.hidden = state.backgroundId !== 'image';
+  }
+
+  function closePresetForm(restoreFocus = true) {
+    const mode = presetFormMode;
+    presetFormMode = null;
+    presetForm.hidden = true;
+    presetName.value = '';
+    presetName.removeAttribute('aria-invalid');
+    if (restoreFocus) (mode?.type === 'rename' ? renamePresetButton : savePresetButton).focus();
+  }
+
+  function openPresetForm(type) {
+    const preset = selectedPreset();
+    if (type === 'rename' && !preset) return;
+    presetFormMode = { type, id: preset?.id };
+    presetNameLabel.textContent = t(type === 'rename' ? 'presets.newName' : 'presets.name');
+    presetName.value = type === 'rename' ? preset.name : '';
+    presetName.removeAttribute('aria-invalid');
+    presetForm.hidden = false;
+    setPresetFeedback('');
+    presetName.focus();
+  }
+
+  function persistPresetChanges(nextPresets, nextSelectedId, messageKey, variables) {
+    if (!savePresets(getPresetStorage, nextPresets)) {
+      setPresetFeedback('presets.writeFailed', {}, true);
+      return false;
+    }
+    presets = nextPresets;
+    selectedPresetId = nextSelectedId;
+    renderPresetOptions();
+    setPresetFeedback(messageKey, variables);
+    return true;
+  }
+
+  function submitPresetForm(event) {
+    event.preventDefault();
+    if (!presetFormMode) return;
+    const name = normalizeName(presetName.value);
+    const duplicate = name && presets.some((preset) => (
+      preset.name.toLowerCase() === name.toLowerCase()
+      && (presetFormMode.type !== 'rename' || preset.id !== presetFormMode.id)
+    ));
+    if (!name || duplicate) {
+      presetName.setAttribute('aria-invalid', 'true');
+      setPresetFeedback(duplicate ? 'presets.duplicateName' : 'presets.invalidName', {}, true);
+      presetName.focus();
+      return;
+    }
+    const isRename = presetFormMode.type === 'rename';
+    const id = isRename ? presetFormMode.id : (window.crypto?.randomUUID?.()
+      || `preset-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    const nextPresets = isRename
+      ? presets.map((preset) => preset.id === id ? { ...preset, name } : preset)
+      : [...presets, { id, name, settings: captureSettings(state) }];
+    if (persistPresetChanges(nextPresets, id, isRename ? 'presets.renamed' : 'presets.saved', { name })) {
+      closePresetForm();
+    }
+  }
+
+  function applyPreset() {
+    closePresetForm(false);
+    selectedPresetId = presetSelect.value;
+    const preset = selectedPreset();
+    setPresetFeedback('');
+    if (preset) {
+      endCropDrag();
+      Object.assign(state, captureSettings(preset.settings));
+      invalidatePendingShare();
+      updateChoiceButtons();
+      updateDownloadUi();
+      renderPreview();
+      setError('');
+      setStatus('');
+      setPresetFeedback(state.backgroundId === 'image' && !state.backgroundImage
+        ? 'presets.appliedNeedsImage' : 'presets.applied', { name: preset.name });
+    }
+    syncPresetControls();
+  }
+
+  function updatePreset() {
+    const preset = selectedPreset();
+    if (!preset) return;
+    const nextPresets = presets.map((item) => item.id === preset.id
+      ? { ...item, settings: captureSettings(state) } : item);
+    if (persistPresetChanges(nextPresets, preset.id, 'presets.updated', { name: preset.name })) {
+      closePresetForm(false);
+    }
+  }
+
+  function deletePreset() {
+    const preset = selectedPreset();
+    if (!preset) return;
+    if (persistPresetChanges(presets.filter(({ id }) => id !== preset.id), '', 'presets.deleted', { name: preset.name })) {
+      closePresetForm(false);
+      presetSelect.focus();
+    }
+  }
 
   function clampUnit(value) {
     return Math.min(1, Math.max(0, value));
@@ -140,12 +286,21 @@
 
   function setTheme(theme) {
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem('fitpic-theme', theme);
+    try {
+      window.localStorage.setItem('fitpic-theme', theme);
+    } catch (error) {
+      // Theme changes still work when browser storage is unavailable.
+    }
     updateThemeToggle();
   }
 
   function initializeTheme() {
-    const savedTheme = window.localStorage.getItem('fitpic-theme');
+    let savedTheme;
+    try {
+      savedTheme = window.localStorage.getItem('fitpic-theme');
+    } catch (error) {
+      // Fall back to the system theme when browser storage is unavailable.
+    }
     if (savedTheme === 'light' || savedTheme === 'dark') {
       document.documentElement.dataset.theme = savedTheme;
     }
@@ -274,6 +429,7 @@
     customColorHex.classList.remove('is-invalid');
     syncImageBackgroundControls();
     syncLayoutControls();
+    syncPresetControls();
 
     const isCrop = state.backgroundId === 'crop' && Boolean(activeImageEntry());
     cropControls.hidden = !isCrop;
@@ -931,6 +1087,24 @@
   }
 
   uploadInput.addEventListener('change', onUpload);
+  presetSelect.addEventListener('change', applyPreset);
+  savePresetButton.addEventListener('click', () => openPresetForm('save'));
+  renamePresetButton.addEventListener('click', () => openPresetForm('rename'));
+  updatePresetButton.addEventListener('click', updatePreset);
+  reapplyPresetButton.addEventListener('click', applyPreset);
+  deletePresetButton.addEventListener('click', deletePreset);
+  presetForm.addEventListener('submit', submitPresetForm);
+  cancelPresetButton.addEventListener('click', () => {
+    closePresetForm();
+    setPresetFeedback('');
+  });
+  presetForm.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closePresetForm();
+      setPresetFeedback('');
+    }
+  });
   platformButtons.addEventListener('click', changePlatform);
   backgroundButtons.addEventListener('click', changeBackground);
   customColorPalette.addEventListener('click', changePaletteColor);
@@ -971,6 +1145,12 @@
     setError('');
     setStatus('');
     renderChoices();
+    renderPresetOptions();
+    presetNameLabel.textContent = t(presetFormMode?.type === 'rename' ? 'presets.newName' : 'presets.name');
+    if (presetFeedbackState) {
+      const { key, variables, isError } = presetFeedbackState;
+      setPresetFeedback(key, variables, isError);
+    }
     updateFileNameUi();
     updateThemeToggle();
     updateDownloadUi();
@@ -978,6 +1158,10 @@
   });
 
   initializeTheme();
+  renderPresetOptions();
+  if (storedPresets.error) {
+    setPresetFeedback(storedPresets.error === 'invalid' ? 'presets.readInvalid' : 'presets.readFailed', {}, true);
+  }
   renderChoices();
   updateFileNameUi();
   updateDownloadUi();

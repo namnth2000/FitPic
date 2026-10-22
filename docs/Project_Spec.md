@@ -7,7 +7,7 @@
 - **Vấn đề:** Một ảnh có thể phù hợp với nội dung nhưng không phù hợp với tỉ lệ hiển thị của Facebook, Instagram, TikTok hoặc YouTube. Có lúc người dùng muốn giữ trọn nội dung bằng background, thêm khoảng thở đều quanh ảnh, dùng một ảnh khác làm background hoặc muốn ảnh phủ kín khung và chủ động chọn vùng bị crop. Khi có nhiều ảnh cùng cần một định dạng, lặp lại quy trình từng ảnh gây tốn thời gian.
 - **Người dùng mục tiêu:** Người dùng mạng xã hội, người bán hàng online và người sáng tạo nội dung cần chuẩn bị ảnh nhanh để đăng lên các nền tảng phổ biến.
 - **Giải pháp chính:** Người dùng tải một hoặc nhiều ảnh lên, chọn placement / tỉ lệ và cách lấp khung. FitPic preview từng ảnh trong batch. Với các background thông thường FitPic giữ trọn ảnh; Image-based dùng một ảnh riêng làm background cho toàn bộ batch; Balance tạo lề đều bốn phía và Radius bo góc foreground; Crop phủ kín canvas và cho phép kéo để điều chỉnh vùng giữ lại cho từng ảnh.
-- **Mục tiêu của phiên bản này:** Giữ luồng đơn giản: **Upload ảnh -> Chọn tỉ lệ / placement -> Chọn background hoặc Crop -> Tùy chỉnh Layout -> Xem từng preview -> Save / Download**.
+- **Mục tiêu của phiên bản này:** Giữ luồng đơn giản: **Upload ảnh -> Chọn preset nếu có -> Chọn tỉ lệ / placement -> Chọn background hoặc Crop -> Tùy chỉnh Layout -> Xem từng preview -> Save / Download**. Người dùng có thể lưu bộ settings thành preset để áp dụng lại cho các batch sau.
 
 # 2. Phạm vi sản phẩm
 
@@ -25,6 +25,8 @@
 10. Nếu chọn Crop, ảnh cover toàn bộ canvas, mặc định căn giữa và có thể kéo để điều chỉnh vùng giữ lại. Balance và Radius không áp dụng cho Crop.
 11. Cùng một tỉ lệ, fill mode, Balance và Radius áp dụng cho toàn bộ batch. Crop position vẫn được lưu riêng cho từng ảnh.
 12. FitPic tạo một JPG riêng cho từng ảnh. Trên iPhone/iPad hỗ trợ file sharing, FitPic gửi toàn bộ file vào một native share sheet. Trên desktop hoặc browser không hỗ trợ, FitPic dùng download fallback.
+
+Người dùng có thể chọn preset ngay sau khi upload để áp dụng các settings đã lưu, hoặc chỉnh như bình thường rồi bấm **Lưu preset** để dùng lại sau.
 
 ## Yêu cầu chức năng
 
@@ -186,6 +188,24 @@ Crop interaction:
 
 ## Quy tắc sản phẩm
 
+### Preset settings
+
+- Có bộ chọn preset và nút **Lưu preset** phía trên phần chọn tỉ lệ trong editor hiện tại.
+- Preset lưu tên, platform / placement (quyết định tỉ lệ), fill mode, custom color, Balance bật/tắt và padding, Radius bật/tắt và giá trị bo góc. Không thêm tùy chọn resize hoặc công cụ chỉnh ảnh mới.
+- Giữ nguyên đơn vị hiện tại: padding 0% đến 20% theo cạnh ngắn canvas, step 1%; radius 0px đến 32px, step 2px, scale theo render hiện có. Settings đang tạm không áp dụng trong Crop vẫn được giữ trong preset.
+- Chọn preset áp dụng ngay cho toàn bộ batch, cập nhật controls / preview và hủy cache share files cũ. Có thể áp dụng lại cùng preset sau khi upload batch khác.
+- Settings chỉnh sau khi áp dụng chỉ ảnh hưởng phiên hiện tại; hiện thông báo có thay đổi chưa lưu. **Cập nhật preset** mới ghi đè settings, **Lưu preset** tạo preset mới.
+- Khi có thay đổi chưa lưu, nút **Áp dụng lại** khôi phục settings của preset đang chọn mà không cần chuyển qua preset khác.
+- Hỗ trợ đổi tên và xóa preset. Đổi tên không ghi đè settings đang chỉnh; xóa không reset composition hiện tại. Chọn **Thiết lập hiện tại** bỏ liên kết preset mà giữ settings.
+- Tên từ 1 đến 60 ký tự sau khi trim / gộp khoảng trắng. Không cho trùng tên, không phân biệt hoa thường.
+- Preset lưu cục bộ trên trình duyệt bằng `fitpic-presets`, schema version 1. Mở lại trang vẫn có danh sách; không tự động áp dụng preset khi tải lại trang.
+- Không lưu ảnh nguồn, file ảnh nền, object URL, vị trí crop từng ảnh hoặc export cache. Preset Image-based dùng ảnh nền đang có trong phiên; nếu chưa có thì nhắc chọn ảnh nền và giữ Save / Download disabled như hiện tại.
+- Không thay đổi crop position của các ảnh khi áp dụng preset; batch mới vẫn reset crop về center như trước.
+- Lỗi đọc, dữ liệu hỏng / version không hỗ trợ, bộ nhớ đầy hoặc bị chặn phải có thông báo VI/EN; chỉnh ảnh vẫn hoạt động. Chỉ thay đổi danh sách preset trong bộ nhớ sau khi lưu thành công.
+- Không đồng bộ thiết bị. Xóa dữ liệu trang web sẽ xóa preset. Không thêm backend, tài khoản, import/export preset hoặc workflow nhiều bước trong phạm vi này.
+
+### Quy tắc hiện có
+
 - FitPic giải quyết việc đưa ảnh về đúng định dạng social media, không cố trở thành photo editor đầy đủ.
 - Người dùng chọn placement / tỉ lệ bằng các lựa chọn rõ ràng thay vì nhập pixel thủ công.
 - Blur Original là fill mode mặc định.
@@ -224,7 +244,7 @@ Crop interaction:
 # 3. UI/UX
 
 - **Nền tảng và thiết bị:** Web, sử dụng được trên desktop và mobile.
-- **Khu vực chính:** Header; upload; chọn tỉ lệ / placement; chọn fill mode; custom palette hoặc Image-based picker khi cần; Layout; preview navigation; preview; crop controls khi cần; nút save / download.
+- **Khu vực chính:** Header; upload; preset selector và lưu/quản lý inline; chọn tỉ lệ / placement; chọn fill mode; custom palette hoặc Image-based picker khi cần; Layout; preview navigation; preview; crop controls khi cần; nút save / download.
 - **Bố cục:** Một luồng ngắn trên cùng một trang, không chuyển sang editor phức tạp.
 - **Khu chọn tỉ lệ:** Pattern compact kiểu CapCut - icon mạng xã hội trong khung, ratio ở dưới.
 - **Custom color:** Hiển thị inline và gọn trong panel, không dùng modal lớn.
@@ -255,12 +275,17 @@ Crop interaction:
 
 - **Dữ liệu đầu vào:** Một hoặc nhiều ảnh nguồn, platform / tỉ lệ, fill mode, custom color nếu có, một ảnh nền local nếu dùng Image-based, Balance / Radius settings và normalized crop position cho từng ảnh nếu Crop.
 - **Dữ liệu đầu ra:** Một hoặc nhiều file JPG theo aspect ratio và composition đã chọn.
-- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend.
+- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend. Preset chỉ lưu tên và settings trong local storage trên trình duyệt hiện tại; không lưu ảnh hoặc crop position. Người dùng có thể xóa từng preset hoặc xóa dữ liệu trang web để xóa toàn bộ preset. Không đồng bộ sang thiết bị khác.
 - **Tích hợp bên ngoài:** Không có API hoặc dịch vụ trả phí.
 - **Quyền riêng tư:** Ảnh nguồn và ảnh nền phải được xử lý trên thiết bị, không upload hoặc gửi nội dung ảnh tới server. Object URL của ảnh nền phải được revoke khi thay, xóa hoặc unload. Không yêu cầu tài khoản hoặc đăng nhập.
 
 # 5. Tiêu chí hoàn thành
 
+- [ ] Tạo, áp dụng, cập nhật, đổi tên và xóa preset ngay trong editor; có feedback tiếng Việt/Anh.
+- [ ] Preset khôi phục đúng ratio, fill mode, màu, Balance và Radius trên batch khác, cả sau khi mở lại trang.
+- [ ] Chỉnh settings không tự ghi đè preset; đổi tên/xóa không thay đổi composition hiện tại.
+- [ ] Preset không lưu ảnh nguồn, file ảnh nền, crop position hoặc export cache; Image-based thiếu ảnh nền vẫn chặn export.
+- [ ] Dữ liệu preset hỏng hoặc local storage bị chặn/đầy không làm hỏng luồng chỉnh ảnh.
 - [ ] Người dùng có thể upload một hoặc nhiều ảnh hợp lệ.
 - [ ] Previous / Next cho phép xem từng ảnh trong batch.
 - [ ] Có counter `current / total` và navigation ẩn khi chỉ có một ảnh.

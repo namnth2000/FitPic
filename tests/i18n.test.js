@@ -4,11 +4,23 @@ const {
   resolveLanguage,
   setLanguage,
   t,
+  translations,
 } = require('../i18n.js');
 
 test('uses an explicit saved FitPic language before browser preferences', () => {
   assert.equal(resolveLanguage(['en-US'], 'vi'), 'vi');
   assert.equal(resolveLanguage(['vi-VN'], 'en'), 'en');
+});
+
+test('preset controls and feedback have matching Vietnamese and English translations', () => {
+  const keys = Object.keys(translations.vi).filter((key) => key.startsWith('presets.'));
+  assert.ok(keys.length > 0);
+  assert.deepEqual(keys.sort(), Object.keys(translations.en).filter((key) => key.startsWith('presets.')).sort());
+  for (const language of ['vi', 'en']) {
+    setLanguage(language, { persist: false });
+    for (const key of keys) assert.notEqual(t(key), key);
+    assert.ok(t('presets.saved', { name: 'Instagram' }).includes('Instagram'));
+  }
 });
 
 test('detects Vietnamese and English from browser language tags', () => {
