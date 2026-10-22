@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  storageKey, captureSettings, sameSettings, normalizeName, loadPresets, savePresets,
+  storageKey, captureSettings, sameSettings, normalizeName, loadPresets, validatePresets, createPresetStore,
 } = require('../fitpic-presets.js');
 
 const settings = {
@@ -39,7 +39,7 @@ test('presets survive a storage round trip without changing layout units or disa
   }, {
     id: 'image', name: 'Image', settings: { ...settings, backgroundId: 'image' },
   }];
-  assert.equal(savePresets(() => storage, entries), true);
+  storage.setItem(storageKey, JSON.stringify({ version: 1, presets: entries }));
   assert.deepEqual(loadPresets(() => storage), { presets: entries, error: null });
   assert.deepEqual(JSON.parse(storage.getItem(storageKey)), { version: 1, presets: entries });
 });
@@ -81,13 +81,27 @@ test('malformed, unsupported or invalid saved data fails safely', () => {
   }
 });
 
-test('blocked storage and quota errors do not report successful saves or replace existing data', () => {
+test('unavailable IndexedDB preserves legacy data and does not report successful saves', async () => {
   const blocked = () => { throw new Error('SecurityError'); };
   assert.deepEqual(loadPresets(blocked), { presets: [], error: 'unavailable' });
-  assert.equal(savePresets(blocked, [preset]), false);
   const raw = JSON.stringify({ version: 1, presets: [preset] });
   const storage = memoryStorage(raw);
-  storage.setItem = () => { throw new Error('QuotaExceededError'); };
-  assert.equal(savePresets(() => storage, []), false);
-  assert.deepEqual(loadPresets(() => storage).presets, [preset]);
+  const store = createPresetStore({ getDatabase: blocked, getLegacyStorage: () => storage });
+  assert.equal(await store.save([]), false);
+  assert.deepEqual(await store.load(), { presets: [preset], error: 'unavailable' });
+  assert.equal(storage.getItem(storageKey), raw);
+});
+
+test('validates and snapshots background Blobs without retaining runtime URLs or source images', () => {
+  const blob = new Blob(['background'], { type: 'image/png' });
+  const entry = { ...preset, settings: { ...settings, backgroundId: 'image' },
+    background: { id: 'bg-1', name: 'background.png', blob, objectUrl: 'blob:session' }, images: ['private.jpg'] };
+  const clean = validatePresets([entry]);
+  assert.deepEqual(clean[0].background, { id: 'bg-1', name: 'background.png', blob });
+  assert.equal(clean[0].images, undefined);
+  for (const patch of [{ blob: 'base64' }, { blob: new Blob([]) },
+    { blob: new Blob(['x'], { type: 'text/html' }) }, { id: '' }, { name: '' }]) {
+    assert.equal(validatePresets([{ ...entry, background: { ...entry.background, ...patch } }]), null);
+  }
+  assert.equal(validatePresets([{ ...entry, settings }]), null);
 });
