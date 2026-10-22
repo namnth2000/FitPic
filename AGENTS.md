@@ -12,8 +12,8 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 
 # Commands
 
-- `npm run check`: kiểm tra cú pháp JavaScript của app client-side, gồm core, i18n và app.
-- `npm test`: chạy unit test cho mapping platform, background order, output ratio, geometry contain/inset/cover/crop và language resolution.
+- `npm run check`: kiểm tra cú pháp JavaScript của app client-side, gồm core, presets, i18n và app.
+- `npm test`: chạy unit test cho mapping platform, background order, output ratio, geometry contain/inset/cover/crop, language resolution và preset persistence/validation.
 - `npm run build`: validation syntax cho static deployment, không có bundling.
 - Deploy toàn bộ repository root lên Cloudflare Pages.
 
@@ -42,6 +42,12 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Theme defaults to `prefers-color-scheme`; an explicit user choice is stored locally under `fitpic-theme`.
 - UI supports Vietnamese and English. If the user has not chosen a language, use `navigator.languages` / `navigator.language`: Vietnamese locales use `vi`, all other locales fall back to `en`. An explicit choice is stored locally under `fitpic-language`.
 - Keep user-facing translations centralized in `i18n.js`; do not add a localization dependency or backend for the current two-language scope.
+- Saved presets use versioned local storage under `fitpic-presets`; persistence and validation are centralized in `fitpic-presets.js`.
+- Presets snapshot only `platformId`, `backgroundId`, `customColor`, `balanceEnabled`, `balancePadding`, `radiusEnabled` and `radiusPx`, preserving existing units and ranges. Do not persist image files, object URLs, per-image crop positions or export caches.
+- Presets apply to the whole batch. Applying a preset invalidates prepared share files and refreshes all controls and preview without changing each source image's crop position.
+- Never auto-overwrite presets after settings edits. Create, update, rename and delete are explicit actions; only commit the in-memory preset list after a successful storage write.
+- Image-based presets reuse an already-selected session background, otherwise require the existing local picker before export. Background files are not persisted.
+- Corrupted, unsupported or blocked storage must show localized feedback without breaking image editing. Theme initialization must also tolerate blocked storage.
 - Cloudflare Pages serves repository-root `_headers`. `Cache-Control: no-cache, must-revalidate` is intentional so browsers may keep local copies but must revalidate them before use, preventing stale HTML/JS/CSS after a deploy without introducing a service worker.
 - Production URL is `https://fitpic.namnth.com/`.
 

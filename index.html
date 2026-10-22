@@ -36,8 +36,10 @@
   <link rel="stylesheet" href="image-background.css" />
   <link rel="stylesheet" href="layout.css" />
   <link rel="stylesheet" href="language.css" />
+  <link rel="stylesheet" href="presets.css" />
   <script src="i18n.js" defer></script>
   <script src="fitpic-core.js" defer></script>
+  <script src="fitpic-presets.js" defer></script>
   <script src="app.js" defer></script>
   <script type="application/ld+json">
     {
@@ -107,6 +109,31 @@
         </section>
 
         <div id="editor" hidden>
+          <section class="panel preset-panel" aria-label="Preset đã lưu" data-i18n-aria-label="presets.panelAria">
+            <label for="preset-select">Preset</label>
+            <div class="preset-row">
+              <select id="preset-select" aria-describedby="preset-note"></select>
+              <button id="save-preset" type="button" data-i18n="presets.saveNew">Lưu preset</button>
+            </div>
+            <div id="preset-actions" class="preset-actions" hidden>
+              <button id="update-preset" type="button" data-i18n="presets.update">Cập nhật preset</button>
+              <button id="reapply-preset" type="button" hidden data-i18n="presets.reapply">Áp dụng lại</button>
+              <button id="rename-preset" type="button" data-i18n="presets.rename">Đổi tên</button>
+              <button id="delete-preset" type="button" data-i18n="presets.delete">Xóa</button>
+            </div>
+            <p id="preset-modified" hidden data-i18n="presets.modified">Có thay đổi chưa lưu vào preset.</p>
+            <p id="preset-note" data-i18n="presets.localNote">Preset lưu trên trình duyệt này, không lưu ảnh.</p>
+            <p id="preset-image-note" hidden data-i18n="presets.imageNote">File ảnh nền chỉ dùng trong phiên hiện tại. Bạn cần chọn lại ảnh nền sau khi mở lại trang.</p>
+            <form id="preset-form" class="preset-form" hidden>
+              <label id="preset-name-label" for="preset-name" data-i18n="presets.name">Tên preset</label>
+              <input id="preset-name" type="text" maxlength="60" required autocomplete="off" aria-describedby="preset-feedback" />
+              <div class="preset-actions">
+                <button type="submit" data-i18n="presets.save">Lưu</button>
+                <button id="cancel-preset" type="button" data-i18n="presets.cancel">Hủy</button>
+              </div>
+            </form>
+            <p id="preset-feedback" role="status" aria-live="polite"></p>
+          </section>
           <section class="panel" aria-label="Chọn tỉ lệ và nền tảng" data-i18n-aria-label="home.platformPanelAria">
             <div id="platform-options" class="platform-choice-grid" aria-label="Tỉ lệ ảnh" data-i18n-aria-label="home.platformGridAria"></div>
           </section>

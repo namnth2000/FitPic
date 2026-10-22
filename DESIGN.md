@@ -14,7 +14,7 @@ Readable
 
 The UI should make this loop obvious without adding editor chrome:
 
-`Upload -> Ratio -> Background / Crop -> Layout -> Preview -> Save / Download`
+`Upload -> Preset (optional) -> Ratio -> Background / Crop -> Layout -> Preview -> Save / Download`
 
 For multiple images, the same ratio, background mode and layout controls apply to the batch. Preview navigation lets users inspect each image without adding thumbnails or asset-manager UI.
 
@@ -63,6 +63,19 @@ The emerald accent is a signal color. Do not flood large surfaces with it.
 - Do not turn every element into a card
 
 ## Controls
+
+### Saved presets
+
+- Place one compact preset panel above the ratio selector, inside the existing editor.
+- Use a native select and **Save preset** action, with an inline name form for create / rename. Enter saves; Cancel or Escape dismisses the form and restores focus.
+- Show **Update preset**, **Rename** and **Delete** only for a selected saved preset. Disable Update until settings differ; indicate unsaved changes using plain helper text, not a badge.
+- Applying a preset updates the whole batch immediately. Selecting **Current settings** clears the preset selection without resetting the composition.
+- Edits affect the current composition until explicitly saved. Renaming never saves pending settings edits, and deleting keeps current settings.
+- Show **Reapply** only when a selected preset has unsaved settings changes, so users can restore it without changing the native select to another option first.
+- Keep names as user-entered text, 1 to 60 characters, with duplicate names rejected without silently overwriting another preset.
+- Explain that presets stay in this browser and do not save images. In Image mode, explain that background files must be selected again after reopening the page.
+- Keep feedback beside the controls, localized in Vietnamese / English, with visible keyboard focus, wrapping actions and no horizontal overflow on mobile.
+- Keep the existing light / dark visual system; do not add a preset manager, preview thumbnails, decorative badges or a workflow builder.
 
 ### Ratio selector
 
