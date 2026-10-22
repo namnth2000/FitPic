@@ -73,7 +73,8 @@ The emerald accent is a signal color. Do not flood large surfaces with it.
 - Edits affect the current composition until explicitly saved. Renaming never saves pending settings edits, and deleting keeps current settings.
 - Show **Reapply** only when a selected preset has unsaved settings changes, so users can restore it without changing the native select to another option first.
 - Keep names as user-entered text, 1 to 60 characters, with duplicate names rejected without silently overwriting another preset.
-- Explain that presets stay in this browser and do not save images. In Image mode, explain that background files must be selected again after reopening the page.
+- Explain briefly that presets and saved backgrounds stay in this browser. Do not show the former session-only background note.
+- An Image preset restores its own background automatically. Selecting or clearing a background marks unsaved changes; Rename preserves the saved image, while Update replaces it. Disable preset actions during save/load.
 - Keep feedback beside the controls, localized in Vietnamese / English, with visible keyboard focus, wrapping actions and no horizontal overflow on mobile.
 - Keep the existing light / dark visual system; do not add a preset manager, preview thumbnails, decorative badges or a workflow builder.
 

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>FitPic preset storage tests</title>
+<pre id="result">Running...</pre>
+<script src="../fitpic-core.js"></script>
+<script src="../fitpic-presets.js"></script>
+<script>
+(async () => {
+  const { createPresetStore } = FitPicPresets;
+  const output = document.querySelector('#result');
+  const results = [];
+  const databases = [];
+  const assert = (value, message) => { if (!value) throw new Error(message); };
+  const settings = { platformId: 'instagram-square', backgroundId: 'image', customColor: '#FFCCAA',
+    balanceEnabled: true, balancePadding: .13, radiusEnabled: true, radiusPx: 18 };
+  const preset = { id: 'image', name: 'Background', settings,
+    background: { id: 'bg-1', name: 'original.png', blob: new Blob(['original bytes'], { type: 'image/png' }) } };
+  const legacy = { version: 1, presets: [{ id: 'old', name: 'Old preset', settings }] };
+  function fixture(raw = null) {
+    const name = `fitpic-test-${crypto.randomUUID()}`;
+    databases.push(name);
+    let value = raw;
+    const getDatabase = () => ({ open: (_, version) => indexedDB.open(name, version) });
+    const storage = { getItem: () => value, removeItem: () => { value = null; } };
+    const makeStore = () => createPresetStore({ getDatabase, getLegacyStorage: () => storage });
+    return { makeStore, storage, name };
+  }
+  async function run(name, task) {
+    await task(); results.push(`PASS: ${name}`); output.textContent = results.join('\n');
+  }
+  try {
+    await run('Blob bytes, filename and settings survive a new store instance', async () => {
+      const f = fixture(); assert(await f.makeStore().save([preset]), 'save failed');
+      const loaded = await f.makeStore().load();
+      assert(!loaded.error && loaded.presets.length === 1, 'load failed');
+      const actual = loaded.presets[0];
+      assert(await actual.background.blob.text() === 'original bytes', 'bytes changed');
+      assert(actual.background.name === 'original.png' && actual.background.blob.type === 'image/png', 'metadata changed');
+      assert(actual.settings.balancePadding === .13 && actual.settings.radiusPx === 18, 'layout units changed');
+    });
+    await run('migration commits legacy presets before removing localStorage', async () => {
+      const f = fixture(JSON.stringify(legacy)); const loaded = await f.makeStore().load();
+      assert(!loaded.error && loaded.presets[0].id === 'old', 'migration failed');
+      assert(f.storage.getItem() === null, 'legacy data not removed');
+      assert((await f.makeStore().load()).presets[0].id === 'old', 'migrated preset not persisted');
+    });
+    await run('rename preserves the saved Blob; replace and delete remove obsolete copies', async () => {
+      const f = fixture(); const store = f.makeStore();
+      await store.save([preset, { ...preset, id: 'other', name: 'Other' }]);
+      await store.save([{ ...preset, name: 'Renamed' }, { ...preset, id: 'other', name: 'Other' }]);
+      assert(await (await store.load()).presets[0].background.blob.text() === 'original bytes', 'rename changed bytes');
+      await store.save([{ ...preset, id: 'other', name: 'Other', background: {
+        ...preset.background, id: 'bg-2', blob: new Blob(['replacement'], { type: 'image/png' }) } }]);
+      const remaining = (await store.load()).presets;
+      assert(remaining.length === 1 && await remaining[0].background.blob.text() === 'replacement', 'replace/delete failed');
+      assert(await preset.background.blob.text() === 'original bytes', 'source Blob mutated');
+    });
+    await run('transaction abort reports failure and preserves the previous collection', async () => {
+      const f = fixture(); const store = f.makeStore(); await store.save([preset]);
+      const put = IDBObjectStore.prototype.put;
+      IDBObjectStore.prototype.put = function (...args) {
+        const request = put.apply(this, args); queueMicrotask(() => this.transaction.abort()); return request;
+      };
+      try { assert(!await store.save([]), 'aborted save reported success'); }
+      finally { IDBObjectStore.prototype.put = put; }
+      assert((await store.load()).presets.length === 1, 'aborted write lost the saved preset');
+    });
+    await run('failed migration retains its legacy copy', async () => {
+      const f = fixture(JSON.stringify(legacy)); const put = IDBObjectStore.prototype.put;
+      IDBObjectStore.prototype.put = () => { throw new DOMException('Full', 'QuotaExceededError'); };
+      try {
+        const loaded = await f.makeStore().load();
+        assert(loaded.error === 'unavailable' && loaded.presets.length === 1, 'legacy fallback failed');
+        assert(f.storage.getItem() === JSON.stringify(legacy), 'failed migration removed legacy data');
+      } finally { IDBObjectStore.prototype.put = put; }
+    });
+    await run('empty collection prevents stale legacy presets from reappearing', async () => {
+      const f = fixture(JSON.stringify(legacy)); await f.makeStore().save([]);
+      assert((await f.makeStore().load()).presets.length === 0, 'legacy preset reappeared');
+    });
+    document.body.dataset.result = 'passed';
+  } catch (error) {
+    output.textContent += `\nFAIL: ${error.stack}`; document.body.dataset.result = 'failed';
+  } finally {
+    for (const name of databases) indexedDB.deleteDatabase(name);
+  }
+})();
+</script>
+</html>

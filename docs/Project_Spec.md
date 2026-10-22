@@ -198,8 +198,8 @@ Crop interaction:
 - Khi có thay đổi chưa lưu, nút **Áp dụng lại** khôi phục settings của preset đang chọn mà không cần chuyển qua preset khác.
 - Hỗ trợ đổi tên và xóa preset. Đổi tên không ghi đè settings đang chỉnh; xóa không reset composition hiện tại. Chọn **Thiết lập hiện tại** bỏ liên kết preset mà giữ settings.
 - Tên từ 1 đến 60 ký tự sau khi trim / gộp khoảng trắng. Không cho trùng tên, không phân biệt hoa thường.
-- Preset lưu cục bộ trên trình duyệt bằng `fitpic-presets`, schema version 1. Mở lại trang vẫn có danh sách; không tự động áp dụng preset khi tải lại trang.
-- Không lưu ảnh nguồn, file ảnh nền, object URL, vị trí crop từng ảnh hoặc export cache. Preset Image-based dùng ảnh nền đang có trong phiên; nếu chưa có thì nhắc chọn ảnh nền và giữ Save / Download disabled như hiện tại.
+- Preset lưu cục bộ bằng IndexedDB `fitpic-presets`, DB version 1, payload version 2. Settings và Blob ảnh nền được ghi cùng transaction. Tự chuyển preset localStorage version 1 khi chưa có dữ liệu IndexedDB; chỉ xóa bản cũ sau khi ghi thành công. Mở lại trang vẫn có danh sách; không tự động áp dụng preset khi tải lại trang.
+- Preset Image-based lưu bản sao file ảnh nền (Blob, tên file, asset ID), tự khôi phục đúng nền của preset sau khi mở lại trang. Thay hoặc xóa nền là thay đổi chưa lưu; chỉ Lưu/Cập nhật mới ghi lại. Đổi tên giữ nguyên file đã lưu. Thay/xóa preset dọn Blob cũ cùng transaction, không ảnh hưởng preset khác. Không lưu ảnh nguồn, object URL, vị trí crop hoặc export cache. Preset Image cũ chưa có Blob cần chọn nền và Cập nhật một lần; không dùng nhầm nền từ preset khác. Không cho lưu preset Image mới khi chưa có nền hợp lệ.
 - Không thay đổi crop position của các ảnh khi áp dụng preset; batch mới vẫn reset crop về center như trước.
 - Lỗi đọc, dữ liệu hỏng / version không hỗ trợ, bộ nhớ đầy hoặc bị chặn phải có thông báo VI/EN; chỉnh ảnh vẫn hoạt động. Chỉ thay đổi danh sách preset trong bộ nhớ sau khi lưu thành công.
 - Không đồng bộ thiết bị. Xóa dữ liệu trang web sẽ xóa preset. Không thêm backend, tài khoản, import/export preset hoặc workflow nhiều bước trong phạm vi này.
@@ -275,7 +275,7 @@ Crop interaction:
 
 - **Dữ liệu đầu vào:** Một hoặc nhiều ảnh nguồn, platform / tỉ lệ, fill mode, custom color nếu có, một ảnh nền local nếu dùng Image-based, Balance / Radius settings và normalized crop position cho từng ảnh nếu Crop.
 - **Dữ liệu đầu ra:** Một hoặc nhiều file JPG theo aspect ratio và composition đã chọn.
-- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend. Preset chỉ lưu tên và settings trong local storage trên trình duyệt hiện tại; không lưu ảnh hoặc crop position. Người dùng có thể xóa từng preset hoặc xóa dữ liệu trang web để xóa toàn bộ preset. Không đồng bộ sang thiết bị khác.
+- **Lưu trữ:** Không lưu ảnh hoặc lịch sử xử lý trên backend. Preset lưu tên, settings và bản sao ảnh nền nếu dùng Image trong IndexedDB trên trình duyệt hiện tại; không lưu ảnh nguồn hoặc crop position. Người dùng có thể xóa từng preset hoặc xóa dữ liệu trang web để xóa toàn bộ preset. Không đồng bộ sang thiết bị khác.
 - **Tích hợp bên ngoài:** Không có API hoặc dịch vụ trả phí.
 - **Quyền riêng tư:** Ảnh nguồn và ảnh nền phải được xử lý trên thiết bị, không upload hoặc gửi nội dung ảnh tới server. Object URL của ảnh nền phải được revoke khi thay, xóa hoặc unload. Không yêu cầu tài khoản hoặc đăng nhập.
 
@@ -284,8 +284,8 @@ Crop interaction:
 - [ ] Tạo, áp dụng, cập nhật, đổi tên và xóa preset ngay trong editor; có feedback tiếng Việt/Anh.
 - [ ] Preset khôi phục đúng ratio, fill mode, màu, Balance và Radius trên batch khác, cả sau khi mở lại trang.
 - [ ] Chỉnh settings không tự ghi đè preset; đổi tên/xóa không thay đổi composition hiện tại.
-- [ ] Preset không lưu ảnh nguồn, file ảnh nền, crop position hoặc export cache; Image-based thiếu ảnh nền vẫn chặn export.
-- [ ] Dữ liệu preset hỏng hoặc local storage bị chặn/đầy không làm hỏng luồng chỉnh ảnh.
+- [ ] Preset khôi phục đúng file ảnh nền sau khi tải lại trang; không lưu ảnh nguồn, crop position hoặc export cache. Thay/xóa preset dọn nền cũ, và Image-based thiếu nền vẫn chặn export.
+- [ ] Dữ liệu preset hỏng hoặc IndexedDB bị chặn/đầy không làm hỏng luồng chỉnh ảnh.
 - [ ] Người dùng có thể upload một hoặc nhiều ảnh hợp lệ.
 - [ ] Previous / Next cho phép xem từng ảnh trong batch.
 - [ ] Có counter `current / total` và navigation ẩn khi chỉ có một ảnh.

@@ -42,11 +42,13 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Theme defaults to `prefers-color-scheme`; an explicit user choice is stored locally under `fitpic-theme`.
 - UI supports Vietnamese and English. If the user has not chosen a language, use `navigator.languages` / `navigator.language`: Vietnamese locales use `vi`, all other locales fall back to `en`. An explicit choice is stored locally under `fitpic-language`.
 - Keep user-facing translations centralized in `i18n.js`; do not add a localization dependency or backend for the current two-language scope.
-- Saved presets use versioned local storage under `fitpic-presets`; persistence and validation are centralized in `fitpic-presets.js`.
-- Presets snapshot only `platformId`, `backgroundId`, `customColor`, `balanceEnabled`, `balancePadding`, `radiusEnabled` and `radiusPx`, preserving existing units and ranges. Do not persist image files, object URLs, per-image crop positions or export caches.
+- Saved presets use IndexedDB database `fitpic-presets` (DB version 1), store `state`, key `presets`, payload version 2. Persistence and validation are centralized in `fitpic-presets.js`. Migrate the legacy localStorage version 1 only when no IndexedDB record exists; remove the legacy key only after the transaction commits.
+- Presets snapshot only `platformId`, `backgroundId`, `customColor`, `balanceEnabled`, `balancePadding`, `radiusEnabled` and `radiusPx`, preserving existing units and ranges. Image-based presets additionally save a background Blob, original filename and asset ID. Do not persist source images, object URLs, per-image crop positions or export caches.
 - Presets apply to the whole batch. Applying a preset invalidates prepared share files and refreshes all controls and preview without changing each source image's crop position.
 - Never auto-overwrite presets after settings edits. Create, update, rename and delete are explicit actions; only commit the in-memory preset list after a successful storage write.
-- Image-based presets reuse an already-selected session background, otherwise require the existing local picker before export. Background files are not persisted.
+- Image-based presets restore their own saved background, never an unrelated session background. Old migrated Image presets without a file require one selection and explicit Update. Saving a new Image preset without a valid background is blocked.
+- Background selection/clearing participates in preset dirty detection. Rename preserves the saved file even with unsaved edits. Store the complete collection in one atomic transaction, so replacing/deleting records also removes their obsolete embedded Blobs.
+- Preset persistence and background decode are asynchronous. Disable preset actions during I/O; stale background loads must not overwrite newer image edits, and replaced/cancelled object URLs must be revoked.
 - Corrupted, unsupported or blocked storage must show localized feedback without breaking image editing. Theme initialization must also tolerate blocked storage.
 - Cloudflare Pages serves repository-root `_headers`. `Cache-Control: no-cache, must-revalidate` is intentional so browsers may keep local copies but must revalidate them before use, preventing stale HTML/JS/CSS after a deploy without introducing a service worker.
 - Production URL is `https://fitpic.namnth.com/`.
