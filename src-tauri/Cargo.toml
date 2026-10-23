@@ -1,0 +1,20 @@
+[package]
+name = "fitpic"
+version = "1.0.0"
+description = "FitPic offline image formatting for social media"
+authors = ["namnth2000"]
+edition = "2021"
+rust-version = "1.90"
+license = "MIT"
+repository = "https://github.com/namnth2000/FitPic"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

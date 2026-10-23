@@ -11,6 +11,7 @@
   } = window.FitPicCore;
   const { t, onChange } = window.FitPicI18n;
   const { captureSettings, sameSettings, normalizeName, createPresetStore } = window.FitPicPresets;
+  const desktop = window.FitPicDesktop;
 
   const previewCanvas = document.querySelector('#preview-canvas');
   const uploadInput = document.querySelector('#image-upload');
@@ -117,6 +118,7 @@
   });
   let presets = [];
   let presetBusy = true;
+  let exportBusy = false;
   let compositionRevision = 0;
   let selectedPresetId = '';
   let presetFormMode = null;
@@ -519,7 +521,7 @@
 
   function updateDownloadUi() {
     const count = state.images.length;
-    const useNativeShare = prefersNativeImageShare();
+    const useNativeShare = desktop.isDesktop() || prefersNativeImageShare();
     if (useNativeShare) {
       downloadButton.textContent = count > 1
         ? t('app.downloadSaveMany', { count })
@@ -529,7 +531,7 @@
         ? t('app.downloadMany', { count })
         : t('app.downloadOne');
     }
-    downloadButton.disabled = !isExportReady();
+    downloadButton.disabled = exportBusy || !isExportReady();
   }
 
   function updatePreviewUi() {
@@ -1077,6 +1079,7 @@
   }
 
   async function downloadImages() {
+    if (exportBusy) return;
     if (!state.images.length) return;
     if (!isExportReady()) {
       setError(t('app.missingBackground'));
@@ -1103,6 +1106,7 @@
       return;
     }
 
+    exportBusy = true;
     downloadButton.disabled = true;
     setError('');
     const wantsNativeShare = prefersNativeImageShare();
@@ -1114,7 +1118,10 @@
     try {
       const files = await buildExportFiles();
 
-      if (wantsNativeShare && canShareFiles(files)) {
+      if (desktop.isDesktop()) {
+        const result = await desktop.saveFiles(files, (index, total) => t('desktop.saveTitle', { index, total }));
+        setStatus(t(result.cancelled ? 'desktop.saveCancelled' : 'desktop.saved', { count: result.saved }));
+      } else if (wantsNativeShare && canShareFiles(files)) {
         state.pendingShareFiles = files;
         try {
           await shareExportFiles(files);
@@ -1139,9 +1146,12 @@
       }
     } catch (error) {
       invalidatePendingShare();
-      setError(t('app.exportFailed'));
+      setError(desktop.isDesktop()
+        ? t('desktop.saveFailed', { count: error.savedCount || 0 })
+        : t('app.exportFailed'));
       setStatus('');
     } finally {
+      exportBusy = false;
       updateDownloadUi();
     }
   }

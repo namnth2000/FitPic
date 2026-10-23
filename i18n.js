@@ -14,6 +14,10 @@
 
   const translations = {
     vi: {
+      'desktop.saveTitle': 'Lưu ảnh {index}/{total} - FitPic',
+      'desktop.saved': 'Đã lưu {count} ảnh JPG.',
+      'desktop.saveCancelled': 'Đã dừng lưu. Đã lưu {count} ảnh JPG.',
+      'desktop.saveFailed': 'Không thể lưu ảnh. Đã lưu {count} ảnh JPG trước khi gặp lỗi. Hãy kiểm tra quyền ghi và dung lượng ổ đĩa.',
       'presets.panelAria': 'Preset đã lưu',
       'presets.current': 'Thiết lập hiện tại',
       'presets.saveNew': 'Lưu preset',
@@ -154,6 +158,10 @@
       'app.exportFailed': 'Không thể tạo đầy đủ file ảnh. Hãy thử lại.',
     },
     en: {
+      'desktop.saveTitle': 'Save image {index}/{total} - FitPic',
+      'desktop.saved': 'Saved {count} JPGs.',
+      'desktop.saveCancelled': 'Saving stopped. Saved {count} JPGs.',
+      'desktop.saveFailed': 'Could not save the image. Saved {count} JPGs before the error. Check write permissions and free disk space.',
       'presets.panelAria': 'Saved presets',
       'presets.current': 'Current settings',
       'presets.saveNew': 'Save preset',

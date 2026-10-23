@@ -241,6 +241,15 @@ Crop interaction:
 - Backend lưu trữ hoặc xử lý ảnh.
 - API trả phí.
 
+# FitPic Desktop
+
+- Windows-first Desktop app dùng Tauri v2, chung HTML/CSS/JS và toàn bộ canvas/preset logic với Web.
+- Build tạo `dist/` cho cả Cloudflare Pages và Tauri; cấu hình deploy Web từ repository root vẫn dùng được.
+- Desktop xử lý ảnh hoàn toàn offline trong WebView2; upload, preview, batch và IndexedDB Blob presets giữ behavior hiện tại.
+- Desktop export mở native Save Dialog lần lượt cho từng JPG. Cancel dừng phần batch còn lại và báo số file đã lưu. Web giữ download/share hiện tại.
+- GitHub Actions build Windows x64 NSIS installer và phát hành GitHub Release khi push tag `desktop-v*` khớp version.
+- Hướng dẫn dev, build, release và checklist kiểm tra ở `docs/Desktop.md`.
+
 # 3. UI/UX
 
 - **Nền tảng và thiết bị:** Web, sử dụng được trên desktop và mobile.

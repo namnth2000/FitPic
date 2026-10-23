@@ -5,6 +5,7 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 # Tech
 
 - Static client-side web app.
+- Windows Desktop uses Tauri v2 in `src-tauri/`, wrapping the same static UI and canvas code.
 - Target deployment: Cloudflare Pages.
 - Image processing must stay entirely in the browser.
 - No backend, account system, server-side image processing, storage, or paid API.
@@ -14,8 +15,10 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 
 - `npm run check`: kiểm tra cú pháp JavaScript của app client-side, gồm core, presets, i18n và app.
 - `npm test`: chạy unit test cho mapping platform, background order, output ratio, geometry contain/inset/cover/crop, language resolution và preset persistence/validation.
-- `npm run build`: validation syntax cho static deployment, không có bundling.
-- Deploy toàn bộ repository root lên Cloudflare Pages.
+- `npm run build`: validation syntax rồi copy static assets vào `dist/`, không có bundling.
+- Cloudflare Pages có thể deploy `dist/`; cấu hình deploy repository root hiện tại vẫn hoạt động.
+- `npm run desktop:dev`: chạy Tauri dev bằng static assets trong `dist/`.
+- `npm run desktop:check`, `npm run desktop:test`, `npm run desktop:build`: kiểm tra Rust, chạy test và tạo Windows NSIS installer.
 
 # Decisions
 
@@ -52,6 +55,9 @@ FitPic là web tool giúp đưa một hoặc nhiều ảnh về đúng định d
 - Corrupted, unsupported or blocked storage must show localized feedback without breaking image editing. Theme initialization must also tolerate blocked storage.
 - Cloudflare Pages serves repository-root `_headers`. `Cache-Control: no-cache, must-revalidate` is intentional so browsers may keep local copies but must revalidate them before use, preventing stale HTML/JS/CSS after a deploy without introducing a service worker.
 - Production URL is `https://fitpic.namnth.com/`.
+- Desktop export uses sequential native Save dialogs through `fitpic-desktop.js` and the Rust `save_export` command. Cancel stops remaining files. Web download/share stays unchanged.
+- Keep Desktop presets in the existing IndexedDB format, separate from browser presets. Keep `com.namnth.fitpic` and the local release origin stable across upgrades.
+- Desktop releases use matching `desktop-v*` tags, package/Cargo versions and committed lockfiles. Instructions live in `docs/Desktop.md`.
 
 # Known Issues
 

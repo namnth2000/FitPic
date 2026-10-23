@@ -1,6 +1,6 @@
 # FitPic
 
-Static, client-side tool to format one or multiple images for common social placements.
+Static, client-side tool to format one or multiple images for common social placements, on the Web and in FitPic Desktop for Windows (Tauri v2).
 
 FitPic supports Instagram, TikTok, Facebook and YouTube aspect ratios, lets users keep the full image with blur / color / image-based backgrounds, add balanced padding and rounded foreground corners, or switch to Crop. It previews every image in a batch and exports each result locally in the browser.
 
@@ -22,7 +22,7 @@ After uploading an image, use **Save preset** above the ratio selector to name a
 
 ## Local checks
 
-Requires Node.js 18 or newer.
+Requires Node.js 18 or newer for the Web checks. Desktop development uses Node.js 24 LTS plus the Windows prerequisites below.
 
 ```powershell
 npm run check
@@ -30,7 +30,38 @@ npm test
 npm run build
 ```
 
-For a local preview, serve this folder with any static HTTP server. The app has no runtime dependencies and is ready to deploy as the repository root on Cloudflare Pages.
+For a local preview, serve this folder with any static HTTP server. `npm run build` validates JavaScript and copies only the app's static assets into `dist/`, including `_headers`. There is no bundler or Web runtime dependency.
+
+Cloudflare Pages can use build command `npm run build` and output directory `dist`. Existing deployments that serve the repository root keep working without a dashboard change. No Web deployment workflow is replaced or triggered by the Desktop release workflow.
+
+## FitPic Desktop (Windows)
+
+The Desktop app bundles the same HTML, CSS, canvas rendering and IndexedDB preset code. Upload, preview, batch settings, per-image Crop and saved background Blobs use the existing browser APIs inside WebView2. Processing works offline. Presets are local to the Desktop app and separate from presets in your browser.
+
+Install Node.js 24 LTS, Rust stable with the MSVC toolchain, Visual Studio C++ Build Tools with a Windows SDK, and Microsoft Edge WebView2. Then, in PowerShell at the repository root:
+
+```powershell
+npm ci
+npm run desktop:info
+npm run desktop:dev
+```
+
+To validate and build the Windows installer:
+
+```powershell
+npm run check
+npm test
+npm run build
+npm run desktop:check
+npm run desktop:test
+npm run desktop:build
+```
+
+The executable is `src-tauri/target/release/fitpic.exe`. The NSIS installer is in `src-tauri/target/release/bundle/nsis/`. It includes the offline WebView2 installer for machines without that runtime. Build tools and dependencies need network access on the first build; image processing does not.
+
+Desktop export opens a native **Save As** dialog for each JPG, sequentially for a batch. Cancel stops the remaining files and reports how many were saved. Web download and iPhone/iPad share behavior stay the same.
+
+Push a matching `desktop-v*` tag to build and publish a Windows x64 installer to GitHub Releases. Keep `package.json`, `package-lock.json`, `src-tauri/Cargo.toml` and `src-tauri/Cargo.lock` versions in sync first. The workflow rejects a mismatched tag. Full setup, release commands and the smoke-test checklist are in [docs/Desktop.md](docs/Desktop.md). Executed checks and remaining manual acceptance are recorded in [docs/Desktop_Validation.md](docs/Desktop_Validation.md).
 
 Open `tests/presets-browser.html` through the same static server to run the native IndexedDB regression tests for Blob persistence, migration, replacement/deletion and transaction failures. The page reports PASS/FAIL without installing test dependencies.
 
